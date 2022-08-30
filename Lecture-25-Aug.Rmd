@@ -1,0 +1,54 @@
+---
+title: "Lecture 1 Summary"
+author: "Ben Ridenhour"
+date: "`r Sys.Date()`"
+output: 
+  pdf_document:
+    toc: true
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+## Summary
+
+Here is a brief list of the topics we covered today:
+
++ Syllabus (grading policy, book, etc)
+  - Note that the book is available at <https://adv-r.hadley.nz> if do not wish to purchase a copy
++ Using RStudio
+  - Usage of the 4 panes (Source, Environment, Console, Files/Help)
+  - Going back with history
+  - Running lines of scripts
+  - And more...
++ R Markdown
+  - Cheat sheet under the "Help > Cheat sheets" menu
+  - YAML header and switching between knitting PDF, HTML, Word, and Notebook
+  - Basic text input and using LaTeX
+  - Entering R code in blocks
++ GitHub/R Project
+  - The address for the course GitHub is <https://git.com/magbenji/Stat427Fall2022>
+  - We will go over making an R project and GitHub again next week (because of my laptop's fail)
++ Some basic R
+  - There is a list of basic R vocabulary at <http://adv-r.had.co.nz/Vocabulary.html>
+  - How to read get help and read R help pages
+  - Function signatures
+  - Functions vs. operator (e.g., `assign()` vs. `<-`)
+  - Installing, loading, and unloading packages (`install.packages()`, `library()`, and `unloadNamespace()`)
+  - Scope, environment layers, and the `::` or `:::` operators
+  
+**Note: We will be working on Chapter 2 of the book next class period.**
+
+And here is some gratuitous R code:
+
+```{r BlockName}
+
+set.seed(1234) #set the random seed
+x <- runif(15) #create 15 random values from a [0,1] continuous uniform distribution
+x #print out the values to see them
+hist(x,10) #create a histogram of the values with 10 bins
+
+```
+  
