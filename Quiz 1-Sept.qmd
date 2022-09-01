@@ -1,0 +1,28 @@
+---
+title: "Quiz 1-Sept"
+subtitle: "Stat 427: R Programming"
+format: revealjs
+editor: visual
+---
+
+## Quiz {.smaller}
+
+1.  Create a **single** vector that consists of:
+
+    -   the 26 lower case letters of the alphabet,
+
+    -   the numbers 1, 2, and 3 repeated each 10 times, and
+
+    -   100 evenly spaced numbers between 3 and 17.
+
+2.  What is the product $$\begin{bmatrix}1 & 2 & 3 \\ 4 & 5 & 6 \\ 7 & 8 & 9\end{bmatrix}\begin{bmatrix}2 \\ 4 \\ 6\end{bmatrix} = \qquad ?$$
+
+3.  What function do you use to get the storage type (e.g., integer) of a variable?
+
+4.  Why does the following code produce an error?
+
+    `day_temp <- data.frame(day = c("Mon", "Wed", "Fri"),`
+
+    `temp = c(32, 40, 35, 28))`
+
+5.  Explain why `c(T,T,F) && c(T,F,F)` returns a value of true.
