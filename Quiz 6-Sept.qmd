@@ -1,0 +1,20 @@
+---
+title: "Quiz 6-Sept"
+subtitle: "Stat 427: R Programming"
+format: revealjs
+editor: visual
+---
+
+## Quiz {.smaller}
+
+1.  What are two functions from the `lobstr` package that will give the hexadecimal memory address of an R object?
+
+2.  Most of the types of objects we discussed use a copy-on-modify behavior. What does "copy-on-modify" mean? What type of object did we discuss that uses the alternate "modify-in-place" behavior? What function call creates this type of object?
+
+3.  Create a function that takes two arguments. The first argument should be a matrix. The second argument will, by default, square the values in the second column of the matrix, however, the user may specify other exponents by which to raise the elements of the column. The function should return the resulting modified matrix.
+
+4.  Create a data frame that has two elements each having length 5; name the first element "Var1" and the second "Var2." Use **name** Var2 to get that element in **2 different ways**.
+
+5.  What function in `lobstr` can tell you how much memory is being used by R? 
+
+6.  Create a vector of 1000 random variables from a Weibull distribution with shape parameters of 2 and a scale parameter of 10. Using the vector, find the mean and variance of the random variables and create a histogram that has 30 bins. <font size="3"> (Help for `hist` and `Distributions` may be useful. The functions for mean and variance are in the `base` and `stats` packages, respectively; try ``?? PACKAGE::TOPIC`` to find the functions if you don't already know them.) </font>
