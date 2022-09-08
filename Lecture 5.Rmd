@@ -1,0 +1,303 @@
+---
+title: "Lecture 5"
+author: "Ben Ridenhour"
+date: "2022-09-08"
+output: 
+  pdf_document:
+    toc: true
+    toc_depth: 3
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Summary
+
+- We picked up our discussion of the factor class again
+- Using (statistical) formulae in various functions (e.g.. `lm()`)
+    + See `? formula` for much of what I talked about
+- We looked at differences in model output (and matrices) when changing the order of factor levels
+- Appending new elements to factors
+    + Level must exist OR 
+    + `c(a,b)` works if both are factors
+- Using the `sample()` and `set.seed()` functions
+- Creating ordinal factors (with an example of ordinal logistic regression)
+- The `tapply()` function
+- The Date S3 class
+- The `unclass()` and `class()` attributes functions
+
+______________________________
+
+# Quiz
+
+1.  Create a vector `x` containing the numbers 4.2, pi, 2/3, and 3 + 2 i. Coerce the vector to be have the type `integer` and save it as `y`. Use a built-in R function to test whether the coercion worked. Explain the resulting resulting vector.
+
+```{r}
+x <- c(4.2, pi, 2/3, 3+2i)
+y <- as.integer(x)
+```
+
+*The resulting vector happens because, when coerced to an integer, double values lose all decimal places and complex values lose their imaginary part.*
+
+2.  By altering the attributes of `y`, create a 2 x 2 matrix. (In other words, **do not** use the `matrix()` command.) What are 2 other ways to alter the attributes to get the same 2 x 2 matrix?
+
+```{r}
+dim(y) <- c(2,2)
+dim(y) <- NULL
+
+attr(y, "dim") <- c(2,2)
+y <- as.vector(y)
+
+structure(y, dim = c(2,2))
+```
+
+3.  If `y` is no longer a vector, make it a vector again. Add the number 10 in the 20th element/position of `y`. Run the function `sum()` on `y`. Why does it fail? Look at the help for the sum function to figure out how to correct the issue. Can you figure out a way to ask R to count the number of **NA** elements for you?
+
+```{r}
+
+y[[20]] <- 10
+sum(y)
+sum(y, na.rm = T)
+
+sum(is.na(y)) #counting NA values
+```
+
+4.  Create a factor `z` that has the values "a", "truck", and "100" repeated four times each. What attributes does `z` have? Which one of the attributes makes `z` an S3 object? Run the command `w <- unclass(z)`. Run `print(w)` and note the output. Run `class(w) <- "factor"`. Now `print(w)`. Explain why there is a difference.
+
+```{r}
+z <- factor(rep(c("a","truck","100"),4))
+attributes(z)
+w <- unclass(z)
+w
+class(w) <- "factor"
+```
+
+*The difference occurs because the generic function `print()` works differently for vectors and an S3 object with class = factor.* 
+
+5.  Create a factor called `team` that has the values "Jim", "Sally", and "Ed" but has an extra level for a missing teammate "Sue". What is the order of the levels? Create a new factor `team2` where you permute the order of the levels in `team` such that they go "Sue", "Sally", "Ed", and "Jim". Run `table()` on both `team` and `team2` to make sure you did not change the count of the elements.
+
+```{r}
+
+team <- factor(c("Jim", "Sally", "Ed"), levels = c("Jim", "Sally", "Ed", "Sue"))
+team2 <- factor(team, levels = c("Sue", "Sally", "Ed", "Jim"))
+
+table(team)
+table(team2)
+```
+
+
+___________________________
+
+# Vectors (Ch 3) cont...
+
+## More on factors
+
+Picking up where we left off from last lecture:
+
+```{r}
+
+lmod <- lm(breaks ~ wool + tension, data = warpbreaks)
+summary(lmod)
+
+```
+Formulae
+
+```{r}
+z <- ~ x + y
+str(z)
+attributes(z)
+
+z <- u ~ x + y
+
+as.formula("u ~ x + y")
+
+z[[2]]
+z[[3]]
+z[[3]][[2]]
+```
+
+Reordering for different output
+
+```{r}
+
+wb2 <- warpbreaks
+
+wb2$wool <- factor(wb2$wool, levels = c("B","A"))
+wb2$tension <- factor(wb2$tension, levels = c("M","L","H"))
+
+lmod2 <- lm(breaks ~ wool + tension, data = wb2)
+
+summary(lmod2)
+```
+
+Looking at the model matrices:
+
+```{r}
+head(model.matrix(lmod))
+
+head(model.matrix(lmod2))
+
+```
+
+Appending values into a factor:
+
+```{r}
+f1 <- factor(letters[1:3])
+c(f1, "d")
+
+levels(f1) <- letters[1:4]
+
+c(f1, "d")
+
+f1[[4]] <- "d"
+f1
+
+f1[[5]] <- "e"
+f1
+
+f1 <- factor(letters[1:3])
+c(f1, factor("d"))
+
+```
+
+Ordered factors (ordinal categorical variables)
+
+```{r}
+
+possibleGrades <- c("F","D","C","B","A")
+
+set.seed(5410)
+
+classGrades <- sample(possibleGrades, 20, replace = T)
+
+classGrades
+
+```
+
+
+```{r}
+classGrades <- ordered(classGrades, levels = possibleGrades)
+
+SAT.scores <- as.numeric(classGrades) * 25 + runif(length(classGrades), 500, 700)
+```
+
+
+```{r}
+tapply(SAT.scores, classGrades, mean)
+```
+
+
+```{r}
+summary(MASS::polr(classGrades ~ SAT.scores))
+```
+## Dates
+
+Dates build on the double type
+
+```{r}
+today <- Sys.Date()
+typeof(today)
+attributes(today)
+```
+
+```{r}
+date <- as.Date("1970-02-01")
+unclass(date)
+```
+
+_________________________________________
+
+# History
+
+Everything I ran today in class:
+
+```{r}
+# x <- c(4.2, pi, 2/3, 3+2i)
+# y <- as.integer(x)
+# y
+# dim(y) <- c(2,2)
+# y
+# dim(y) <- NULL
+# y
+# attr(y, "dim") <- c(2,2)
+# y
+# y <- as.vector(y)
+# y
+# structure(y, dim = c(2,2))
+# y
+# y[[20]] <- 10
+# y
+# sum(y)
+# sum(y, na.rm = T)
+# z <- factor(rep(c("a","truck","100"),4))
+# z
+# attributes(z)
+# w <- unclass(z)
+# w
+# class(w) <- "factor"
+# w
+# team <- factor(c("Jim", "Sally", "Ed"), levels = c("Jim", "Sally", "Ed", "Sue"))
+# team
+# table(team)
+# str(team)
+# attributes(team)
+# team2 <- factor(team, levels = c("Sue", "Sally", "Ed", "Jim"))
+# team <- factor(c("Jim", "Sally", "Ed"), levels = c("Jim", "Sally", "Ed", "Sue"))
+# team2 <- factor(team, levels = c("Sue", "Sally", "Ed", "Jim"))
+# table(team)
+# table(team2)
+# lmod <- lm(breaks ~ wool + tension, data = warpbreaks)
+# summary(lmod)
+# z <- ~ x + y
+# str(z)
+# attributes(z)
+# z <- u ~ x + y
+# z
+# as.formula("u ~ x + y")
+# z[[2]]
+# z[[3]]
+# z[[3]][[2]]
+# z <- ~ x + y
+# str(z)
+# attributes(z)
+# z <- u ~ x + y
+# as.formula("u ~ x + y")
+# z[[2]]
+# z[[3]]
+# z[[3]][[2]]
+# wb2 <- warpbreaks
+# wb2$wool <- factor(wb2$wool, levels = c("B","A"))
+# wb2$tension <- factor(wb2$tension, levels = c("M","L","H"))
+# lmod2 <- lm(breaks ~ wool + tension, data = wb2)
+# summary(lmod2)
+# head(model.matrix(lmod))
+# head(model.matrix(lmod2))
+# f1 <- factor(letters[1:3])
+# f1
+# c(f1, "d")
+# levels(f1) <- letters[1:4]
+# f1
+# c(f1, "d")
+# f1[[4]] <- "d"
+# f1
+# f1[[5]] <- "e"
+# f1
+# possibleGrades <- c("F","D","C","B","A")
+# possibleGrades <- c("F","D","C","B","A")
+# set.seed(5410)
+# classGrades <- sample(possibleGrades, 20, replace = T)
+# classGrades
+# classGrades <- ordered(classGrades, levels = possibleGrades)
+# SAT.scores <- as.numeric(classGrades) * 25 + runif(length(classGrades), 500, 700)
+# tapply(SAT.scores, classGrades, mean)
+# summary(MASS::polr(classGrades ~ SAT.scores))
+# today <- Sys.Date()
+# typeof(today)
+# attributes(today)
+# as.numeric(today)
+# date <- as.Date("1970-02-01")
+# unclass(date)
+```
+
+
