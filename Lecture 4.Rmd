@@ -1,0 +1,319 @@
+---
+title: "Lecture 4"
+author: "Ben Ridenhour"
+date: "2022-09-06"
+output: 
+  pdf_document:
+    toc: true
+    toc_depth: 3
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Summary
+
++ In the quiz, we cover `obj_addr()`, `ref()`, `mem_used()`, copy-on-modify, modify-in-place, creating a function (with optional arguments), getting parts of lists using names, searching help with `??`, getting a random variable from a known distribution, and plotting a histogram
+
++ We cover the first several sections of Chapter 3 on Vectors
+
++ Appending vectors and NA values
+
++ Using `is.*()` for logical tests on objects and `as.*()` for coercion of object type
+
++ Attributes using `attr()`, `attributes()`, and `structure()`
+    - Special attribute functions `setNames()`, `dim()`, `length()`, etc.
+    
++ S3 vectors (vectors with a `class` attribute)
+    - S3 vectors have special versions of generic functions such as `print()`, `summary()`, etc
+    - Types: factor, Date, Date-time, difftime
+    - Factors
+        + Creation
+        + Specifying levels
+        + Re-ordering levels
+        + Levels in models
+  
+
+_________________________________
+
+# Quiz 
+
+1.  What are two functions from the `lobstr` package that will give the hexadecimal memory address of an R object?
+
+> obj_addr(), tracemem() (base R, not lobstr), ref() 
+
+2.  Most of the types of objects we discussed use a copy-on-modify behavior. What does "copy-on-modify" mean? What type of object did we discuss that uses the alternate "modify-in-place" behavior? What function call creates this type of object?
+
+Copy-on-modify only creates a new object when you modify an element of the copy. Environments (`rlang::env()`) use modify-in-place. 
+
+3.  Create a function that takes two arguments. The first argument should be a matrix. The second argument will, by default, square the values in the second column of the matrix, however, the user may specify other exponents by which to raise the elements of the column. The function should return the resulting modified matrix.
+
+```{r}
+
+f <- function(x, expo = 2){
+  x[,2] <- x[,2]^expo
+  x
+}
+
+f(matrix(1:9,nrow = 3 ))
+
+f(matrix(1:9,nrow = 3 ), expo = 4.5125)
+
+```
+
+4.  Create a data frame that has two elements each having length 5; name the first element "Var1" and the second "Var2." Use **name** Var2 to get that element in **2 different ways**.
+
+```{r}
+
+myDF <- data.frame(Var1 = 1:5, Var2 = letters[1:5])
+
+myDF$Var2
+myDF[["Var2"]]
+
+```
+
+5.  What function in `lobstr` can tell you how much memory is being used by R?
+
+`mem_used()`
+
+6.  Create a vector of 1000 random variables from a Weibull distribution with shape parameters of 2 and a scale parameter of 10. Using the vector, find the mean and variance of the random variables and create a histogram that has 30 bins. <font size="3"> (Help for `hist` and `Distributions` may be useful. The functions for mean and variance are in the `base` and `stats` packages, respectively; try `?? PACKAGE::TOPIC` to find the functions if you don't already know them.) </font>
+
+```{r}
+
+my_rans <- rweibull(1000,2,10)
+mean(my_rans)
+var(my_rans)
+
+hist(my_rans, breaks = 30)
+
+```
+
+----------------------------------------
+
+# Chapter 3 (Vectors and more...)
+
+Vectors have attributes, for example:
+
+- dimension
+
+- class (S3 vectors)
+
+- atomic
+   + logical
+   + integer (numeric)
+   + double (numeric)
+   + character
+   
+## Appending vectors, NA values, is.*, and as.*
+
+Some basic operations for simple vectors:
+
+```{r}
+
+x <- 1:5
+x[[2]] <- NA
+x <- c(x, 8)
+x[[20]] <- 32
+x
+
+is.integer(x) #is.* function for testing
+str(x)
+typeof(x)
+
+x <- as.integer(x) #coercion using as.*
+is.integer(x)
+
+as.integer(c(1.1, 2, 3.7))
+
+```
+
+## Looking at and setting attributes
+
+We have the functions 
+- `attr()` set and retrieve individual attributes
+- `attributes()` get all attributes of an objects
+- `structure()` set all attributes en masse
+
+
+```{r}
+attributes(x)
+
+x <- c(a = 1, b = 2, c = 3)
+attributes(x)
+x[["b"]]
+
+attr(x, "names") #get an individual attribute
+
+attr(x, "names") <- c("bob","tom","betty")
+x
+
+x <- setNames(1:3, LETTERS[1:3])
+
+x <- structure(1:3, names = c("v1","v2","v3"))
+
+```
+
+Let's look at a matrices, dimensions, and the `dim()` function
+
+```{r}
+
+m1 <- matrix(1:6, nrow=3)
+
+attributes(m1)
+
+attr(m1, "dim") <- c(2,3)
+
+dim(m1) <- c(3,2)
+
+dim(m1) <- c(1,1,3,2)
+
+```
+
+## S3 atomic vectors
+
+If you give a vector a **class** it becomes an S3 object. S3 objects have special versions of generic functions. 
+
+Important classes:
+
+- factor (type: integer)
+- Date (type: double)
+- Date-times (POSIXct; type: double)
+- difftimes (durations; type: double)
+
+### Factors
+
+Easiest version of creating a factor:
+
+```{r}
+ f1 <- factor(rep(c("bob","jill"), 4)) #levels are assigned alphabetically
+ f1
+ str(f1)
+ typeof(f1)
+```
+
+Specifying levels of the factor:
+
+```{r}
+
+f2 <- factor(c("bob","bob","tim"), levels = c("betty", "tim", "bob"))
+f2
+str(f2)
+table(f2)
+attributes(f2)
+```
+Maybe we want to reorder the levels:
+
+```{r}
+f3 <- factor(f2, levels = c("tim","bob","betty"))
+f3
+str(f3)
+
+levels(f2) <- c("tim","bob","betty") #fails
+
+```
+
+Why reorder?
+
+```{r}
+
+lmod <- lm(breaks ~ wool + tension, data = warpbreaks)
+summary(lmod)
+model.matrix(lmod)
+```
+
+We will continue the example of re-ordering factors for modeling on Thursday!
+
+-----------------------
+
+# History
+
+
+```{r}
+# f <- function(x, expo = 2){
+#   x[,2] <- x[,2]^expo
+#   x
+# }
+# matrix(1:9,nrow = 3 )
+# f(matrix(1:9,nrow = 3 ))
+# f(matrix(1:9,nrow = 3 ), expo = 4.5125)
+# myDF <- data.frame(Var1 = 1:5, Var2 = letters[1:5])
+# myDF
+# myDF$Var2
+# myDF[["Var2"]]
+# myDF <- data.frame(Var1 = 1:5, Var2 = letters[1:5])
+# myDF$Var2
+# myDF[["Var2"]]
+# lobstr::mem_used()
+# ?? stats::variance
+# my_rans <- rweibull(1000,2,10)
+# my_rans <- rweibull(1000,2,10)
+# mean(my_rans)
+# var(my_rans)
+# hist(my_rans, breaks = 30)
+# x <- 1:5
+# x[[2]] <- NA
+# x
+# x <- c(x, 8)
+# x
+# x[[20]] <- 32
+# x
+# is.integer(x)
+# str(x)
+# typeof(x)
+# x <- as.integer(x)
+# is.integer(x)
+# as.integer(c(1.1, 2, 3.7))
+# attributes(x)
+# x <- c(a = 1, b = 2, c = 3)
+# attributes(x)
+# x[["b"]]
+# attr(x, "names")
+# attr(x, "names") <- c("bob","tom","betty")
+# x
+# x <- setNames(1:3, LETTER[1:3])
+# x <- setNames(1:3, LETTERS[1:3])
+# x
+# x <- structure(1:3, names = c("v1","v2","v3"))
+# x
+# attributes(x)
+# m1 <- matrix(1:6, nrow=3)
+# m1
+# attributes(m1)
+# attr(m1, "dim") <- c(2,3)
+# m1
+# dim(m1) <- c(3,2)
+# m1
+# dim(m1) <- c(1,1,3,2)
+# m1
+# str(m1)
+# dim(m1) <- c(3,2)
+# str(m1)
+# length(m1)
+# x
+# rep(c("bob","jill"), 4)
+# typeof(rep(c("bob","jill"), 4))
+# f1 <- factor(rep(c("bob","jill"), 4))
+# f1
+# str(f1)
+# typeof(f1)
+# f2 <- factor(c("bob","bob","tim"), levels = c("betty", "tim", "bob"))
+# f2
+# str(f2)
+# table(f2)
+# table(c("bob","bob","tim"))
+# attributes(f2)
+# f3 <- factor(f2, levels = c("tim","bob","betty"))
+# f3
+# str(f3)
+# levels(f2)
+# levels(f2) <- c("tim","bob","betty")
+# table(f2)
+# table(f3)
+# ?? datasets::.
+# ? warpbreaks
+# lmod <- lm(breaks ~ wool + tension, data = warpbreaks)
+# summary(lmod)
+# model.matrix(lmod)
+
+```
