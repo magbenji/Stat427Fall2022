@@ -1,0 +1,19 @@
+---
+title: "Quiz 8-Sept"
+subtitle: "Stat 427: R Programming"
+format: revealjs
+editor: visual
+---
+
+## Quiz {.smaller}
+
+1. Create a vector `x` containing the numbers 4.2, pi, 2/3, and 3 + 2 i. Coerce the vector to be have the type `integer` and save it as `y`. Use a built-in R function to test whether the coercion worked. Explain the resulting resulting vector.
+
+2. By altering the attributes of `y`, create a 2 x 2 matrix. (In other words, **do not** use the `matrix()` command.) What are 2 other ways to alter the attributes to get the same 2 x 2 matrix?
+
+3. If `y` is no longer a vector, make it a vector again. Add the number 10 in the 20th element/position of `y`. Run the function `sum()` on `y`. Why does it fail? Look at the help for the sum function to figure out how to correct the issue. Can you figure out a way to ask R to count the number of **NA** elements for you?
+
+4. Create a factor `z` that has the values "a", "truck", and "100" repeated four times each. What attributes does `z` have? Which one of the attributes makes `z` an S3 object? Run the command `w <- unclass(z)`. Run `print(w)` and note the output. Run `class(w) <- "factor"`. Now `print(w)`. Explain why there is a difference.
+
+5. Create a factor called `team` that has the values "Jim", "Sally", and "Ed" but has an extra level for a missing teammate "Sue". What is the order of the levels? Create a new factor `team2` where you permute the order of the levels in `team` such that they go "Sue", "Sally", "Ed", and "Jim". Run `table()` on both `team` and `team2` to make sure you did not change the count of the elements.
+
