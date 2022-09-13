@@ -1,0 +1,24 @@
+---
+title: "Quiz 13-Sept"
+subtitle: "Stat 427: R Programming"
+format: revealjs
+editor: visual
+---
+## Quiz {.smaller}
+
+1. Suppose you have a dependent variable `y` and explanatory factors `A`, `B`, and `C`. What is **a** correct formula to model main effects of all 3 factors, including all 2 way interactions (e.g., A x B)? What if you just wanted the interaction between B and C? What about a formula that has the 3-way interaction A x B x C? Suppose you want to know the effect of log-temperature (all you have is measure of temperature in a variable called called `temp`) on `y` with just main effects of the 3 factors; then what would the formula be?
+
+2. Create a factor with values and levels of "cat", "dog", and "bird". Now append the values "lizard" and "horse" to the factor. Verify that the appended version is a factor with the expected 5 values and 5 levels.
+
+3. Create a toy data set (as a data frame) that matches the following properties:
+    - Has 100 rows of data
+    - Has a variable that is a factor have a **random number** of "A", "B", "C", "D", or "E" values
+    - What is the count of each of the levels?
+    - Has a variable that is that has the following means per group but with a Normal variance of 2 (i.e. use `rnorm`): $\mu_A = 3, \mu_B = 5, \mu_C = 1, \mu_D = 4, \mu_E = 2$
+    - Use `tapply()` to verify both the means and variances of the variables
+    
+4. The Black Death (bubonic plague) first showed up in Dorset, England around 8 Aug 1348. What date was it 1000 days later? How many days have elapsed since the plague showed up in Dorset and today? Use the `difftime()` command to calculate the number of weeks in the elapsed time.
+    
+
+
+
