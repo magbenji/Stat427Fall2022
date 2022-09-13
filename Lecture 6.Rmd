@@ -1,0 +1,293 @@
+---
+title: "Lecture 6"
+author: "Ben Ridenhour"
+date: "2022-09-13"
+output: 
+  pdf_document:
+    toc: true
+    toc_depth: 3
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Summary
+
+- The quiz covered:
+    + Using formulae, using the `update()` command on a formula, and the `terms.formula()` command
+    + Appending values to a factor
+    + Creating a toy data set using factors and `rnorm()`; using `tapply()`
+    + Creating a date and performing simple algebra (+ or -) with them
+- Formatting dates for input and output (help `strptime` for formatting flags)
+- POSIXct date-times (run command `OlsonNames()` to see a list of possible time zones)
+- Started discussing data frames versus tibbles (`library(tibble)`)
+    + Discussion mainly focused on differences between a tibble and a data frame
+    
+
+------------------------------
+
+# Quiz
+
+1.  Suppose you have a dependent variable `y` and explanatory factors `A`, `B`, and `C`. What is **a** correct formula to model main effects of all 3 factors, including all 2 way interactions (e.g., A x B)? What if you just wanted the interaction between B and C? What about a formula that has the 3-way interaction A x B x C? Suppose you want to know the effect of log-temperature (all you have is measure of temperature in a variable called `temp`) on `y` with just main effects of the 3 factors; then what would the formula be?
+
+```{r}
+fm1 <- y ~ (A + B + C)^2
+# ~ A + B + C + A:B + A:C + B:C alternate
+fm2 <- y ~ A + B*C
+# ~ A + B + C + B:C
+fm3 <- y ~ (A + B + C)^3
+update(fm1, . ~ . + A:B:C)
+update(fm1, . ~ . - A:B)
+terms.formula(fm1)
+fm4 <- y ~ A + B + C + log(temp)
+```
+
+2.  Create a factor with values and levels of "cat", "dog", and "bird". Now append the values "lizard" and "horse" to the factor. Verify that the appended version is a factor with the expected 5 values and 5 levels.
+
+```{r}
+myFactor <- factor(c("cat","dog","bird"))
+c(myFactor, c("lizard","horse"))
+c(myFactor, factor("lizard","horse"))
+myFactor <- factor(myFactor, levels = c("cat","dog","bird","lizard","horse"))
+myFactor[[4]] <- "lizard"
+myFactor[[5]] <- "horse"
+myFactor
+```
+
+3.  Create a toy data set (as a data frame) that matches the following properties:
+
+    -   Has 100 rows of data
+    -   Has a variable that is a factor have a **random number** of "A", "B", "C", "D", or "E" values
+    -   What is the count of each of the levels?
+    -   Has a variable that is that has the following means per group but with a Normal variance of 2 (i.e. use `rnorm`): $\mu_A = 3, \mu_B = 5, \mu_C = 1, \mu_D = 4, \mu_E = 2$
+    -   Use `tapply()` to verify both the means and variances of the variables
+
+```{r}
+var1 <- factor(sample(LETTERS[1:5], 100, replace=T))
+table(var1)
+var1 <- factor(var1, levels = c("C","E","A","D","B"))
+var2 <- rnorm(100, as.integer(var1), sqrt(2))
+
+tapply(var2, var1, mean)
+tapply(var2, var1, var)
+
+df <- data.frame(var1,var2)
+```
+
+4.  The Black Death (bubonic plague) first showed up in Dorset, England around 8 Aug 1348. What date was it 1000 days later? How many days have elapsed since the plague showed up in Dorset and today? Use the `difftime()` command to calculate the number of weeks in the elapsed time.
+
+```{r}
+oldDay <- as.Date("1348-08-08")
+
+oldDay + 1000
+
+Sys.Date() - oldDay
+
+difftime(oldDay,Sys.Date(),units="weeks")
+```
+
+_______________________________
+
+# Lecture 6: Vectors again (Ch 3 continued...)
+
+## Formatting Dates
+
+Continuing with dates... formatting. Look at the help for `strptime`.
+
+```{r}
+format(as.Date("1992-01-02"), "%m%y%d")
+format(as.Date("1992-01-02"), "%d BOB %B")
+as.Date("019202", format = "%m%y%d")
+
+# Convert "Dec 1, 1993" to a date
+as.Date("Dec 1, 1993", "%b %d, %Y")
+```
+
+POSIXct (date-time class)
+
+```{r}
+
+today <- as.POSIXct("2022-09-06 10:25", tz = "America/Los_Angeles")
+typeof(today)
+attributes(today)
+```
+
+See `? OlsonNames()` for time zones.
+
+```{r}
+OlsonNames() #print out the possible time zones for POSIXct
+```
+
+## Data frames and tibbles
+
+```{r}
+df1 <- data.frame(x = 1:3, y = LETTERS[1:3])
+str(df1)
+```
+
+The book tells you that y will a factor by default. This is incorrect as of R 4.0.
+
+```{r}
+df2 <- data.frame(x = 1:3, y = LETTERS[1:3], stringsAsFactors = T)
+str(df2)
+```
+
+Data frames can have many attributes:
+
+rownames, colnames, names, nrow, ncol, length
+
+```{r}
+attr(df2, "names") <- c("var1", "var2")
+df2
+unlist(df2)
+```
+Tibbles are an updated version of data frames
+
+```{r}
+library(tibble)
+
+t1 <- as.tibble(df2)
+str(t1)
+attributes(t1)
+t1
+```
+
+```{r}
+
+#special to tibbles, we can create columns based on previous columns
+
+t2 <- tibble(v1 = 1:10, v2 = sample(v1))
+t2
+```
+
+Tibbles hate rownames
+
+```{r}
+
+rownames(df2) <- paste("R",1:3,sep="")
+as_tibble(df2) #dropped row names
+as_tibble(df2, rownames = "names")
+```
+
+
+_____________________________________
+
+# History
+
+The complete list of commands used today...
+
+```{r}
+# fm1 <- y ~ (A + B + C)^2
+# # ~ A + B + C + A:B + A:C + B:C alternate
+# fm2 <- y ~ A + B*C
+# # ~ A + B + C + B:C
+# fm3 <- y ~ (A + B + C)^3
+# update(fm1, . ~ . + A:B:C)
+# update(fm1, . ~ . - A:B)
+# terms.formula(f1)
+# fm1 <- y ~ (A + B + C)^2
+# # ~ A + B + C + A:B + A:C + B:C alternate
+# fm2 <- y ~ A + B*C
+# # ~ A + B + C + B:C
+# fm3 <- y ~ (A + B + C)^3
+# update(fm1, . ~ . + A:B:C)
+# update(fm1, . ~ . - A:B)
+# terms.formula(fm1)
+# fm1 <- y ~ (A + B + C)^2
+# # ~ A + B + C + A:B + A:C + B:C alternate
+# fm2 <- y ~ A + B*C
+# # ~ A + B + C + B:C
+# fm3 <- y ~ (A + B + C)^3
+# update(fm1, . ~ . + A:B:C)
+# update(fm1, . ~ . - A:B)
+# terms.formula(fm1)
+# fm4 <- y ~ A + B + C + log(temp)
+# myFactor <- factor(c("cat","dog","bird"))
+# c(myFactor, c("lizard","horse"))
+# c(myFactor, factor("lizard","horse"))
+# myFactor <- factor(c("cat","dog","bird"))
+# c(myFactor, c("lizard","horse"))
+# c(myFactor, factor("lizard","horse"))
+# myFactor <- factor(myFactor, levels = c("cat","dog","bird","lizard","horse"))
+# myFactor
+# myFactor <- factor(c("cat","dog","bird"))
+# c(myFactor, c("lizard","horse"))
+# c(myFactor, factor("lizard","horse"))
+# myFactor <- factor(myFactor, levels = c("cat","dog","bird","lizard","horse"))
+# myFactor[[4]] <- "lizard"
+# myFactor[[5]] <- "horse"
+# myFactor
+# var1 <- factor(sample(100, LETTERS[1:5], replace=T))
+# var1 <- factor(sample(LETTERS[1:5], 100, replace=T))
+# table(var1)
+# typeof(var1)
+# attributes(var1)
+# var1 <- factor(var1, levels = c("C","E","A","D","B"))
+# as.integer(var1)
+# str(var1)
+# attributes(var1)
+# unclass(var1)
+# var2 <- rnorm(100, as.integer(var1), sqrt(2))
+# var2
+# tapply(var2, var1, mean)
+# tapply(var2, var1, var)
+# df <- data.frame(var1,var2)
+# View(df)
+# oldDay <- as.Date("1348-08-08")
+# oldDay
+# attributes(oldDay)
+# oldDay + 1000
+# Sys.Date() - oldDay
+# difftime(oldDay,Sys.Date(),units="weeks")
+# ?strptime
+# format(as.Date("1992-01-02"), "%m%y%d")
+# format(as.Data("1992-01-02"), "%d BOB %B")
+# format(as.Date("1992-01-02"), "%d BOB %B")
+# as.Date("010902", format = "%m%y%d")
+# as.Date("019202", format = "%m%y%d")
+# # Convert "Dec 1, 1993" to a date
+# as.Date("Dec 1, 1993", "%b %d, %Y")
+# today <- as.POSIXct("2022-09-06 10:25", tz = "America/Los_Angeles")
+# typeof(today)
+# attributes(today)
+# unclass(today)
+# ? OlsonNames()
+# df1 <- data.frame(x = 1:3, y = LETTERS[1:3])
+# df1
+# str(df1)
+# df2 <- data.frame(x = 1:3, y = LETTERS[1:3], stringsAsFactors = T)
+# str(df2)
+# attr(df2, "names") <- c("var1", "var2")
+# df2
+# attributes(df2)
+# unlist(df2)
+# attr(df2, "names") <- c("var1", "var2")
+# df2
+# unlist(df2)
+# unlist(df1)
+# library(tibble)
+# t1 <- as.tibble(df2)
+# library(tibble)
+# t1 <- as.tibble(df2)
+# str(t1)
+# attributes(t1)
+# library(tibble)
+# t1 <- as.tibble(df2)
+# str(t1)
+# attributes(t1)
+# t1
+# dplyr::starwars
+# #special to tibbles, we can create columns based on previous columns
+# t2 <- tibble(v1 = 1:10, v2 = sample(v1))
+# t2
+# rownames(df2) <- paste("R",1:3,sep="")
+# df2
+# as_tibble(df2)
+# as_tibble(df2, rownames = "names")
+
+```
+
+
+
+
