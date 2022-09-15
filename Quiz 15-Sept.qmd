@@ -1,0 +1,20 @@
+---
+title: "Quiz 15-Sept"
+subtitle: "Stat 427: R Programming"
+format: revealjs
+editor: visual
+---
+
+## Quiz {.smaller}
+
+1. What is the time difference between  on `14-Sep-2022 2:32 PM` in St. Kitts and `17-Sep-2022 3:45 AM` in London in seconds? When you create your data-time objects, pass the **exact** date strings in the question. To find the correct time zones, remember to use `OlsonNames()`.
+
+2. Other than having different generic functions (e.g., `print()`), what are two differences between data frames and tibbles that were mentioned in the last lecture?
+
+3. Create a data frame that has 100 rows with a the first column being random Poisson variables with mean 5 and the second column being random binomial variables with size = 10 and probability = 0.5. After creating the data frame, name the rows R1 ... R100 (use the `paste()` command to manufacture the 100 labels). After creating the data frame do the following:
+    - Convert the data frame to a tibble (be sure keep the row names!)
+    - Compare the memory usage of the tibble of and the data frame
+    - Compare the memory storage locations of the tibble and data frame
+    - What do the two comparisons above tell you about tibbles relative to data frames?
+    
+
