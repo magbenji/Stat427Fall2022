@@ -1,0 +1,320 @@
+---
+title: "Lecture 7"
+author: "Ben Ridenhour"
+date: "2022-09-15"
+output: 
+  pdf_document:
+    toc: true
+    toc_depth: 3
+    include:
+      in_header: "preamble.tex"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Summary
+
+- Nothing new on the quiz coverage, but there was a `lobstr` "refresher" in the third question
+    + We did mention usage of the `paste()` command
+- Finished the discussion of Ch. 3 
+    + Complex structures of tibbles and data frames (e.g., lists of lists)
+    + Manipulation: `cbind()`, `rbind()`, erasing columns, `add_column()`, `$` operator
+- Began Ch. 4, Subsetting
+    + Mainly covered ways of subsetting vectors: selection of individual or multiple elements with integers (positive or negative) or logical values, blank `[]`, and zero length return values
+    + Using names to select elements of, e.g., named vectors or matrices (row or column names for subsetting)
+- **Exam next Thursday, 22 Sept. over RStudio/R usage (general usage) and Ch. 2-4. **
+
+-----------------------------
+
+# Quiz
+
+1.  What is the time difference between on `14-Sep-2022 2:32 PM` in St. Kitts and `17-Sep-2022 3:45 AM` in London in seconds? When you create your data-time objects, pass the **exact** date strings in the question. To find the correct time zones, remember to use `OlsonNames()`.
+
+```{r}
+fmt <- "%d-%b-%Y %I:%M %p"
+
+dt1 <- as.POSIXct("14-Sep-2022 2:32 PM", tz = "America/St_Kitts",
+                  format = fmt)
+
+dt2 <- as.POSIXct("17-Sep-2022 3:45 AM", tz = "Europe/London",
+                  format = fmt)
+  
+difftime(dt2, dt1, units = "secs")
+
+format(dt1, "%d-%B-%y")
+```
+
+2.  Other than having different generic functions (e.g., `print()`), what are two differences between data frames and tibbles that were mentioned in the last lecture?
+
+   - Row names get dropped in tibbles, and we can create subsequent columns in tibbles using earlier specified columns
+   
+```{r}
+library(tibble)
+tibble(x = 1:10, y = x^2)
+```
+
+3.  Create a data frame that has 100 rows with a the first column being random Poisson variables with mean 5 and the second column being random binomial variables with size = 10 and probability = 0.5. After creating the data frame, name the rows R1 ... R100 (use the `paste()` command to manufacture the 100 labels). After creating the data frame do the following:
+
+```{r}
+df <- data.frame(pois_var = rpois(100,5), bin_var = rbinom(100, 10, 0.5))
+
+rownames(df) <- paste("R",1:100,sep="")
+```
+
+    -   Convert the data frame to a tibble (be sure keep the row names!)
+    
+    ```{r}
+    tb <- as_tibble(df, rownames = "MyRowNames")
+    tb
+    ```
+
+    -   Compare the memory usage of the tibble of and the data frame
+    
+```{r}
+library(lobstr)
+
+obj_size(df)
+obj_size(tb)
+
+```
+    
+    -   Compare the memory storage locations of the tibble and data frame
+    
+```{r}
+obj_addr(df)
+obj_addr(tb)
+
+ref(df, tb)
+```
+
+    -   What do the two comparisons above tell you about tibbles relative to data frames?
+    
+    Tibbles take more memory!
+    
+# Lecture 7
+
+## Ch. 3 Tibbles and Data frames (cont.)
+
+Data frames and tibbles can have complex structures. They can hold lists of lists.
+
+```{r}
+
+data.frame(x = 1:3, y = I(list(1:2, 1:3, 1:4)))
+
+tibble(x = 1:3, y = list(1:2, 1:3, 1:4))
+
+lm1 <- lm(mpg ~ cyl + hp, data = mtcars)
+
+lm2 <- lm(mpg ~ cyl * hp, data = mtcars)
+
+lm3 <- lm1 <- lm(mpg ~ cyl * hp - 1, data = mtcars)
+
+data.frame(x = 1:3, mods = I(list(lm1, lm2, lm3)))
+
+```
+
+
+Some manipulation commands
+
+```{r}
+#erase a column
+
+head(df)
+df$pois_var <- NULL
+
+#appending rows or columns
+tb2 <- tibble(v1=1:3, v2=letters[1:3])
+
+#row binding
+rbind(tb2, c(1,"bob")) #forced our int v1 to a char -- bad!
+rbind(tb2, list(1, "bob")) #forced int to double
+rbind(tb2, list(1L, "bob"))
+
+#column binding
+str(cbind(tb2, v3=4:6)) #doing this forces tibble to data frame
+str(add_column(tb2, v3=4:6))
+
+#cbind and rbind work for data frame
+df2 <- as.data.frame(tb2)
+rbind(df2, list(1L, "bob"))
+cbind(df2, v3 = 4:6)
+
+tb2$newCol <- 7:9
+df2$newCol <- 7:9
+```
+
+# Ch 4 Subsetting
+
+## Atomic vectors
+
+There are 6 (ish) ways to subset vectors. We've talked about `[`, `[[`, and `$`.
+
+```{r}
+x <- runif(5)
+x
+```
+
+Using positive integers
+```{r}
+x[2]
+x[[2]]
+
+x[c(1,4)]
+x[rep(3,3)]
+```
+
+Negative integers
+
+```{r}
+x[c(-3,-2)]
+x[-3:-2]
+x[-c(3,2)]
+```
+
+
+Logical values
+
+```{r}
+x[c(T,F)]
+```
+
+"Blank"
+
+```{r}
+x[] #returns everyting in the index
+```
+
+Zero
+
+```{r}
+x[0] #keeps the structure of the object but drops all elements
+```
+
+
+Named vectors
+
+```{r}
+y <- setNames(x, LETTERS[1:5])
+
+y[c("A","E")]
+
+y[c("F")]
+```
+
+Matrices
+```{r}
+x <- matrix(1:6, nrow = 2)
+colnames(x) <- paste("C",1:3,sep="")
+rownames(x) <- paste("R",1:2,sep="")
+attributes(x)
+dimnames(x)
+x["R1","C2"]
+
+```
+
+
+
+_________________________________
+
+# History
+
+R commands from today's lecture:
+
+```{r}
+# fmt <- "%d-%b-%Y %I:%M %p"
+# dt1 <- as.POSICct("14-Sep-2022 2:32 PM", tz = "America/St_Kitts",
+# format = fmt)
+# fmt <- "%d-%b-%Y %I:%M %p"
+# dt1 <- as.POSIXct("14-Sep-2022 2:32 PM", tz = "America/St_Kitts",
+# format = fmt)
+# dt1
+# fmt <- "%d-%b-%Y %I:%M %p"
+# dt1 <- as.POSIXct("14-Sep-2022 2:32 PM", tz = "America/St_Kitts",
+# format = fmt)
+# dt2 <- as.POSIXct("17-Sep-2022 3:45 AM", tz = "Europe/London",
+# format = fmt)
+# difftime(dt2, dt1, units = "secs")
+# format(dt1, "%d-%B-%y")
+# library(tibble)
+# tibble(x = 1:10, y = x^2)
+# df <- data.frame(pois_var = rpois(100,5), bin_var = rbinom(100, 10, 0.5))
+# head(df)
+# paste("R",1:100, "a",sep=c("","-"))
+# rownames(df) <- paste("R",1:100,sep="")
+# head(df)
+# tb <- as_tibble(df, rownames = "MyRowNames")
+# tb
+# library(lobstr)
+# library(lobstr)
+# obj_size(df)
+# obj_size(tb)
+# obj_addr(df)
+# obj_addr(tb)
+# ref(df, tb)
+# data.frame(x = 1:3, y = I(list(1:2, 1:3, 1:4)))
+# data.frame(x = 1:3, y = I(list(1:2, 1:3, 1:4)))
+# data.frame(x = 1:3, y = I(list(1:2, 1:3, 1:4)))
+# tibble(x = 1:3, y = list(1:2, 1:3, 1:4))
+# tibble
+# tibble(x = 1:3, y = list(1:2, 1:3, 1:4))
+# head(mtcars)
+# data.frame(x = 1:3, y = I(list(1:2, 1:3, 1:4)))
+# tibble(x = 1:3, y = list(1:2, 1:3, 1:4))
+# lm1 <- lm(mpg ~ cyl + hp, data = mtcars)
+# lm2 <- lm(mpg ~ cyl * hp, data = mtcars)
+# lm3 <- lm1 <- lm(mpg ~ cyl * hp - 1, data = mtcars)
+# data.frame(x = 1:3, mods = I(list(lm1, lm2, lm3)))
+# data.frame(x = 1:3, mods = I(list(lm1, lm2, lm3)))
+# str(lm1)
+# head(df)
+# View(df)
+# df$pois_var <- NULL
+# head(df)
+# #appending rows or columns
+# tb2 <- tibble(v1=1:3, v2=letters[1:3])
+# rbind(tb2, c(1, "bob"))
+# rbind(tb2, list(1, "bob"))
+# rbind(tb2, list(1, "bob"))
+# rbind(tb2, list(1L, "bob"))
+# rbind(tb2, list(1L, "bob"))
+# str(cbind(tb2, v3=4:6))
+# str(add_column(tb2, v3=4:6))
+# #cbind and rbind work for data frame
+# df2 <- as.data.frame(tb2)
+# df2
+# rbind(df2, list(1L, "bob"))
+# str(rbind(df2, list(1L, "bob")))
+# cbind(df2, v3 = 4:6)
+# tb2$newCol <- 7:9
+# tb2
+# df2$newCol <- 7:9
+# df2
+# x <- runif(5)
+# x
+# x[2]
+# x[[2]]
+# x[c(1,4)]
+# x[rep(3,3)]
+# x[c(-3,-2)]
+# x[-3:-2]
+# x[-c(3,2)]
+# x[c(T,F)]
+# x[]
+# x[0]
+# y <- setNames(x, LETTERS[1:5])
+# y
+# attributes(y)
+# y <- setNames(x, LETTERS[1:5])
+# y[c("A","E")]
+# y[c("F")]
+# x <- matrix(1:6, nrow = 2)
+# colnames(x) <- paste("C",1:3,sep="")
+# rownames(x) <- paste("R",1:2,sep="")
+# attributes(x)
+# dimnames(x)
+# x["R1","C1"]
+# x["R1","C2"]
+
+```
