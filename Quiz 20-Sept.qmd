@@ -1,0 +1,29 @@
+---
+title: "Quiz 20-Sept"
+subtitle: "Stat 427: R Programming"
+format: revealjs
+editor: visual
+---
+
+## Quiz (pg 1.){.smaller}
+
+1. Create a tibble that has 3 columns and 10 rows: the first column should be a factor, the second column should be a random normal, and the third column is the absolute value of the second column. Name the columns. After creating the tibble:
+    + Add a fourth column that is the natural logarithm of the third column. **Make sure your tibble remains a tibble.**
+    + Add a row with new (appropriate) values for the 4 variables.
+    + Delete the second column.
+    + Depending on how you added the fourth column, use an alternative method to bind in another column (data of your choosing).
+    + Coerce your tibble to a data frame and the check the object size of the two objects. Which is larger?
+    
+## Quiz (cont.){.smaller}
+    
+2.  Create a vector with 100 random uniform values in the range of 0 to 5; before generating the random numbers, initialize the random number generator using the value 12. Do the following:
+    + Name the elements of the vector by pasting the letter "e" together with the results of `sample(1:100)`
+    + Drop every third element and find the sum of the resulting vector
+    + Keep elements 1-20 and 80-90 then find the mean of the resulting vector
+    + Return the elements e1-e10 as a vector
+    + Return an empty vector
+    + Return all the values of the vector while using the `[` operator
+    + Convert the vector to a 10 x 10 matrix. Get columns 5-7. Get rows 7-9. Get the element in the 7th row and 9th column.
+    
+    
+    
