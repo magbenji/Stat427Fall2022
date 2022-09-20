@@ -1,0 +1,334 @@
+---
+title: "Lecture 8"
+author: "Ben Ridenhour"
+date: "2022-09-20"
+output: 
+  pdf_document:
+    toc: true
+    toc_depth: 3
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Summary
+
+- The quiz covered:
+    + Manipulation of tibbles (and data frames) with addition/deletion columns and rows
+    + Subsetting/slicing vectors using integer, negative integers, names, and logicals
+    + Return 0 length vectors or full length vectors
+    + Subsetting/slicing matrices to get columns, rows, or individual elements
+- We continued Ch.4 on subsetting and covered:
+    + Getting multiple (scattered) elements from a matrix (or data frame/tibble)
+    + Using the `drop = F` flag for data frames to maintain structure
+    + Use of `$` vs `[[` vs `[` (and briefly `@` or `slot()`)
+    + Partial matching of `$`
+    + Using named vectors to create a lookup
+    + Permutation, unique sub-samples, bootstrapping
+    + Selection using logical tests
+- We talked about the exam **on Thursday**
+    + Get the exam preview on Canvas for details
+
+
+_________________
+
+# Quiz
+
+1.  Create a tibble that has 3 columns and 10 rows: the first column should be a factor, the second column should be a random normal, and the third column is the absolute value of the second column. Name the columns. After creating the tibble:
+    -   Add a fourth column that is the natural logarithm of the third column. **Make sure your tibble remains a tibble.**
+    -   Add a row with new (appropriate) values for the 4 variables.
+    -   Delete the second column.
+    -   Depending on how you added the fourth column, use an alternative method to bind in another column (data of your choosing).
+    -   Coerce your tibble to a data frame and the check the object size of the two objects. Which is larger?
+    
+```{r}
+library(tibble)
+library(lobstr)
+
+ti <- tibble(rf = factor(sample(c("a", "b", "c"),10, replace = T)),
+             rn = rnorm(10),
+             abrn = abs(rn))
+
+ti <- add_column(ti, lgrn = log(ti$abrn))
+
+#ti$lgrn <- log(ti$abrn)
+#ti[[4]] <- log(ti$abrn)
+
+ti <- rbind(ti, list("c", 0.2, 0.2, log(0.2)))
+ti$rn <- NULL
+#ti[[2]] <- NULL
+#ti[,2] <- NULL
+
+ti[[4]] <- rpois(11, 5)
+
+df <- as.data.frame(ti)
+
+obj_size(df)
+obj_size(ti)
+```
+
+## Quiz (cont.) {.smaller}
+
+2.  Create a vector with 100 random uniform values in the range of 0 to 5; before generating the random numbers, initialize the random number generator using the value 12. Do the following:
+    -   Name the elements of the vector by pasting the letter "e" together with the results of `sample(1:100)`
+    -   Drop every third element and find the sum of the resulting vector
+    -   Keep elements 1-20 and 80-90 then find the mean of the resulting vector
+    -   Return the elements e1-e10 as a vector
+    -   Return an empty vector
+    -   Return all the values of the vector while using the `[` operator
+    -   Convert the vector to a 10 x 10 matrix. Get columns 5-7. Get rows 7-9. Get the element in the 7th row and 9th column.
+    
+```{r}
+
+set.seed(12)
+rv <- runif(100, max = 5)
+names(rv) <- paste("e",sample(1:100),sep="")
+sum(rv[c(T,T,F)])
+sum(rv[-seq(3,100,by=3)])
+#could also do with positive integers 1,2,4,5,7,8...
+
+mean(rv[c(1:20, 80:90)])
+rv[paste("e",1:10,sep="")]
+
+rv[0]
+rv[]
+
+mat <- matrix(rv, nrow = 10)
+
+mat[,5:7]
+mat[7:9,]
+mat[7,9]
+
+```
+    
+_________________
+
+# Lecture - Subsetting (Ch 4 cont.)
+
+
+## Getting multiple elements that are scattered
+
+```{r}
+
+getThese <- matrix(ncol = 2, byrow = T,
+                   c(1,1,
+                     4,7,
+                     7,9)
+                   )
+
+mat[getThese]
+
+```
+
+## Data frames
+
+Just like matrices, the first index indicates rows and the second index indicates columns. We can pick or drop using integers, names, logicals, etc...
+
+```{r}
+
+df[,1]
+typeof(df[,1])
+class(df[,1])
+str(df[,1])
+
+df[,1,drop=F]
+str(df[,1,drop=F])
+```
+
+In general, `[[` this gets a single item while `[` shortens the object
+
+`$` is similar to `[[`
+
+```{r}
+df$rf
+df[["rf"]]
+
+z<- "rf"
+df$z
+df[[z]]
+```
+
+`$` does partial matching
+
+```{r}
+l1 <- list("bob" = 1:4, "bonnie" = 5:8)
+
+l1$b #fails because bob and bonnie both start with "b"
+l1$bo # fails because both start with "bo"
+l1$bon #partial match succeeds
+
+```
+
+In S4, there is the `@` operator and `slot()` function that work like `$` and `[[`, respectively.
+
+Subsetting using "" (nothing) is useful because it preserves structure
+
+```{r}
+
+mt1 <- mtcars
+
+mt1[] <- lapply(mt1, as.integer)
+
+is.data.frame(mt1)
+
+```
+
+
+```{r}
+
+mt2 <- mtcars
+
+mt2 <- lapply(mt2, as.integer)
+
+is.data.frame(mt2)
+
+mt2 <- as.data.frame(mt2)
+
+```
+
+## Applications of subsetting
+
+### Names vectors as lookup
+
+```{r}
+x <- sample(letters[1:3], 10, replace = T)
+vals <- c("a" = "Mon", "b" = "Tues", "c" = "Weds")
+
+vals[x]
+```
+
+### Permutation and bootstrapping
+
+```{r}
+
+#Permutation (shuffling elements)
+
+df[sample(nrow(df)),]
+
+#Unique subsample (cross-validation techniques)
+
+df[sample(nrow(df),4),]
+
+#Bootstrapping
+
+df[sample(nrow(df), replace = T),]
+
+```
+### Logical subsetting
+
+There are many types of logical tests that can all be used for subsetting
+
+```{r}
+mtcars[mtcars$gear == 5, ]
+mtcars[mtcars$gear == 5 | mtcars$gear == 4,]
+mtcars[mtcars$gear == 5 & mtcars$mpg > 30, ]
+mtcars[mtcars$gear %in% 3:5, ]
+```
+
+-----------------
+
+# History 
+
+```{r}
+# knitr::opts_chunk$set(echo = TRUE)
+# factor(sample(c("a", "b", "c")),10))
+# factor(sample(c("a", "b", "c"),10))
+# factor(sample(c("a", "b", "c"),10, replace = T))
+# ti <- tibble(rf = factor(sample(c("a", "b", "c"),10, replace = T)),
+# rn = rnorm(10),
+# abrn = abs(rn))
+# library(tibble)
+# library(lobstr)
+# ti <- tibble(rf = factor(sample(c("a", "b", "c"),10, replace = T)),
+# rn = rnorm(10),
+# abrn = abs(rn))
+# View(ti)
+# t1 <- add_column(lgrn = log(t1$abrn))
+# t1 <- add_column(t1, lgrn = log(t1$abrn) )
+# ti <- add_column(ti, lgrn = log(ti$abrn) )
+# ti
+# ti <- rbind(ti, list("c", 0.2, 0.2, log(0.2)))
+# str(ti)
+# ti$rn <- NULL
+# ti
+# ti[[4]] <- rpois(11)
+# ti[[4]] <- rpois(11, 5)
+# ti
+# df <- as.data.frame(ti)
+# obj_size(df)
+# obj_size(ti)
+# rv <- runif(100, max = 5)
+# rv
+# set.seed(12)
+# rv <- runif(100, max = 5)
+# names(rv) <- paste("e",sample(1:100),sep="")
+# sum(rv[c(T,T,F)])
+# sum(rv[-seq(3,100,by=3)])
+# #could also do with positive integers 1,2,4,5,7,8...
+# mean(rv[c(1:20, 80:90)])
+# rv[paste("e",1:10,sep="")]
+# rv[0]
+# rv[]
+# mat <- matrix(rv, nrow = 10)
+# mat[,5:7]
+# mat[7:9,]
+# mat[7,9]
+# View(mat)
+# getThese <- matrix(ncol = 2, byrow = T,
+# c(1,1,
+# 4,7,
+# 7,9)
+# )
+# mat[getThese]
+# df[,1]
+# typeof(df[,1])
+# class(df[,1])
+# str(df[,1])
+# df[,1,drop=F]
+# df[,1,drop=F]
+# str(df[,1,drop=F])
+# df$rf
+# df[["rf"]]
+# z<- "rf"
+# df$z
+# df[[z]]
+# l1 <- list("bob" = 1:4, "bonnie" = 5:8)
+# l1$b
+# l1$bo
+# l1$bon
+# l1$bo
+# mt1 <- mtcars
+# mt1[] <- lapply(mt1, as.integer)
+# is.data.frame(mt1)
+# mt1
+# mt2 <- lapply(mt2, as.integer)
+# mt2 <- mtcars
+# mt2 <- lapply(mt2, as.integer)
+# is.data.frame(mt2)
+# str(mt2)
+# mt2 <- as.data.frame(mt2)
+# str(mt2)
+# x <- sample(letters[1:3], 10, replace = T)
+# vals <- c("a" = "Mon", "b" = "Tues", "c" = "Weds")
+# vals[x]
+# sample(11)
+# nrow(df)
+# df[sample(nrow(df)),]
+# sample(nrow(df),4)
+# sample(nrow(df),4)
+# sample(nrow(df),4)
+# sample(nrow(df),4)
+# sample(nrow(df),4)
+# df[sample(nrow(df),4),]
+# sample(nrow(df), replace = T)
+# df[sample(nrow(df), replace = T),]
+# mtcars$gear == 5
+# mtcars[mtcars$gear == 5, ]
+# mtcars[mtcars$gear == 5 | mtcar$gear == 4,]
+# mtcars[mtcars$gear == 5 | mtcars$gear == 4,]
+# mtcars[mtcars$gear == 5 & mtcars$mpg > 30, ]
+# mtcars[mtcars$gear %in% 3:5, ]
+
+```
+
