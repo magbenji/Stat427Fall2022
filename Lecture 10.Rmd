@@ -1,0 +1,238 @@
+---
+title: "Lecture 10"
+author: "Ben Ridenhour"
+output: 
+  pdf_document:
+    toc: true
+    toc_depth: 3
+date: "2022-10-04"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+-------------------------------------------------
+
+# Summary
+
+- We covered several topic during the quiz, but the focus was on using subsetting and flow control
+   + Creation of data storage outside of for-loops
+   + Random sampling, in particular drawing unique subsets of data
+   + Using `lm` and getting coefficients
+   + Some data manipulation
+   + As "non-quiz" material, we covered some plotting basics (e.g., the `plot()` and `points()` commands) and making predictions for `lm`
+- We began our discussion of Ch 6. which cover use and creation of functions. We talked about:
+   + The 3 parts of a functions
+   + Anonymous (headless) functions
+   + Passing arguments as lists
+   + Different ways of running a series of commands
+
+
+------------------------------------------------
+
+# Quiz
+
+1.  Create 50 **unique** subsets by generating unique subsets of indices and storing them. See the help for the `unique()` function as a method of guaranteeing all 50 sets are unique.
+
+```{r}
+dim(quakes)
+x <- matrix(ncol=50,nrow=500)
+for(i in 1:50) x[,i] <- sample(nrow(quakes), nrow(quakes)*0.5)
+ncol(unique(x, MARGIN = 2)) == ncol(x)
+
+```
+
+
+2.  Run and store the coefficients of the linear model for each of the 50 subsets.
+
+```{r}
+res <- vector("list", ncol(x))
+for(i in 1:ncol(x)){
+  res[[i]] <- coef(lm(mag ~ (depth + long)^2, data = quakes[x[,i],]))
+}
+
+res <- as.data.frame(t(as.data.frame(res)))
+rownames(res) <- NULL
+
+```
+
+3.  Calculate the mean and standard errors of the resulting parameters estimates (there are 4 parameters in the model).
+
+```{r}
+
+ests <- colMeans(res)
+ests
+apply(res, 2, var)^0.5
+
+```
+
+4.  Compare the means and standard errors to the theoretical estimates of the means and standard errors given by `lm()`.
+
+
+```{r}
+
+summary(mod <- lm(mag ~ depth*long, data=quakes))
+
+```
+
+Bonus examination:
+
+```{r}
+plot(quakes$depth, quakes$mag, xlab = "Depth", ylab = "Magnitude",
+     main = "Earthquake dependence on depth") #base layer
+
+predMag <- predict(mod, data.frame(depth = 40:680, long = mean(quakes$long)))
+
+points(40:680, predMag, type = "l", col = "red", lwd = 2)
+
+robustMag <- ests[['(Intercept)']] + ests[['long']] * mean(quakes$long) + ests[['depth']] * 40:680 + ests[['depth:long']] *  mean(quakes$long) * 40:680
+
+points(40:680, robustMag, type = "l", col = "blue", lwd = 2, lty = 2)
+
+
+```
+
+
+------------------------------------------------
+
+# Lecture 10 - Ch 6. Functions
+
+Functions have 3 parts:
+1. formals (signature, arguments)
+2. body (expression to be evaluated at run time)
+3. environment (where the function is executed/determines the search path for values)
+
+Remember that functions have class "function" and type of (`typeof()`) closure.
+
+## Getting information about functions
+
+```{r}
+testFn <- function(a,b){
+  #simple function
+  a * log(b)
+}
+
+formals(testFn)
+args(testFn) 
+
+body(testFn)
+attr(testFn, "srcref") #shows more formatting etc than body()
+
+environment(testFn)
+
+```
+## Anonymous functions
+
+Anonymous functions are created temporarily and have no name. Most often we use these in functions that call a secondary function. For examply, we use the commonly in the `apply` family of commands, e.g.:
+
+```{r}
+
+x <- matrix(rpois(100,20), nrow = 10)
+
+apply(x, 1, function(row) sum(log(row))) #sum of the logged values of each row
+```
+## Passing arguments as a list
+
+Constructing argument lists can be handy (at times):
+
+```{r}
+argList <- list(1:10, na.rm=T)
+do.call(mean, argList) #runs mean(1:10, na.rm = T)
+```
+
+## Running functions "in line" (infix functions)
+
+In the library `magrittr` there is the infix function "and then" `%>%`.
+
+These are all ways we can chain together functions:
+
+1. `y <- f(x); g(y)` [intermediate storage]
+2. `g(f(x))` [nesting functions]
+3. `x %>% f() %>% g() -> saveMe`
+
+```{r}
+library(magrittr)
+
+x <- 1:10
+
+y <- sum(x); log(y)
+
+log(sum(x))
+
+x %>% sum() %>% log()
+
+
+```
+## Scoping and more...
+
+To be continued!
+
+------------------------------------------------
+
+# History
+
+```{r}
+# View(quakes)
+# knitr::opts_chunk$set(echo = TRUE)
+# dim(quakes)
+# x <- matrix(ncol=50,nrow=500)
+# for(i in 1:50) x[,i] <- sample(nrow(quakes), nrow(quakes)*0.5)
+# ncol(unique(x, MARGIN = 2)) == ncol(x)
+# res <- vector("list", ncol(x))
+# for(i in 1:ncol(x)){
+# res[[i]] <- coef(lm(mag ~ (depth + long)^2, data = quakes[x[,i]]))
+# }
+# res <- vector("list", ncol(x))
+# for(i in 1:ncol(x)){
+# res[[i]] <- coef(lm(mag ~ (depth + long)^2, data = quakes[x[,i],]))
+# }
+# res
+# res <- vector("list", ncol(x))
+# for(i in 1:ncol(x)){
+# res[[i]] <- coef(lm(mag ~ (depth + long)^2, data = quakes[x[,i],]))
+# }
+# res <- as.data.frame(t(as.data.frame(res)))
+# rownames(res) <- NULL
+# View(res)
+# colMeans(res)
+# apply(res, 2, var)^0.5
+# summary(mod <- lm(mag ~ depth*long, data=quakes))
+# plot(quakes$depth, quakes$mag, xlab = "Depth", ylab = "Magnitude",
+# main = "Earthquake dependence on depth")
+# range(quakes$depth)
+# data.frame(depth = 40:680, long = mean(quakes$long))
+# plot(quakes$depth, quakes$mag, xlab = "Depth", ylab = "Magnitude",
+# main = "Earthquake dependence on depth") #base layer
+# predMag <- predict(mod, data.frame(depth = 40:680, long = mean(quakes$long)))
+# points(40:680, predMag, type = "l", col = "red", lwd = 2)
+# ests <- colMeans(res)
+# ests
+# apply(res, 2, var)^0.5
+# ests
+# plot(quakes$depth, quakes$mag, xlab = "Depth", ylab = "Magnitude",
+# main = "Earthquake dependence on depth") #base layer
+# predMag <- predict(mod, data.frame(depth = 40:680, long = mean(quakes$long)))
+# points(40:680, predMag, type = "l", col = "red", lwd = 2)
+# robustMag <- ests[['(Intercept)']] + ests[['long']] * mean(quakes$long) + ests[['depth']] * 40:680 + ests[['depth:long']] *  mean(quakes$long) * 40:680
+# points(40:680, robustMag, type = "l", col = "blue", lwd = 2, lty = 2)
+# testFn <- function(a,b){
+# #simple function
+# a * log(b)
+# }
+# formals(testFn)
+# args(testFn)
+# body(testFn)
+# attr(testFn, "srcref") #shows more formatting etc than body()
+# environment(testFn)
+# x <- matrix(rpois(100,20), nrow = 10)
+# apply(x, 1, function(row) sum(log(row))) #sum of the logged values of each row
+# argList <- list(1:10, na.rm=T)
+# do.call(mean, argList) #runs mean(1:10, na.rm = T)
+# library(magrittr)
+# x <- 1:10
+# y <- sum(x); log(y)
+# log(sum(x))
+# x %>% sum() %>% log()
+```
+
