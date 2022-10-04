@@ -1,0 +1,18 @@
+---
+title: "Quiz 4-Oct"
+subtitle: "Stat 427: R Programming"
+format: revealjs
+editor: visual
+---
+
+## Quiz {.smaller}
+
+At the end of the last class period we leveraged subsetting and flow control to bootstrap a linear model. In this quiz, you will be using cross-validation to perform robust estimation on a linear model. Cross-validation uses unique subsets of the data to repeatedly estimate parameters. Using the `quakes` dataset in R, use cross-validation on a linear model of earthquake magnitude that considers the main effects of depth and longitude, as well as their interaction. Use 50\% of the data in each cross-validation **unique** subset. Do the following:
+
+1. Create 50 **unique** subsets by generating unique subsets of indices and storing them. See the help for the `unique()` function as a method of guaranteeing all 50 sets are unique.
+
+2. Run and store the coefficients of the linear model for each of the 50 subsets.
+
+3. Calculate the mean and standard errors of the resulting parameters estimates (there are 4 parameters in the model).
+
+4. Compare the means and standard errors to the theoretical estimates of the means and standard errors given by `lm()`.
