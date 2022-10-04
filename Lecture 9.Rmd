@@ -1,0 +1,238 @@
+---
+title: "Lecture 9"
+author: "Ben Ridenhour"
+date: "2022-09-29"
+output: 
+  pdf_document:
+    toc: true
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, error = TRUE)
+```
+
+# Summary
+
+- Chapter 5 is fairly short and talks about flow control
+    + If/Else Statements
+    + Vectorized versions
+    + `case_when` and `switch`
+    + For loops
+    + Mentioned `while` and `repeat`
+- Asked the class to do bootstrapped estimates from a basic model using the Loblolly data
+
+---------------------------------------
+
+# Lecture 9 Ch 5 Flow Control
+
+## If, If/Else
+
+```if(condtion1){
+  true_action_1
+} else {
+  false_action_1
+}
+```
+
+```{r}
+x <- if(F) "bob"
+y <- if(F) "bob" else "ted"
+
+z <- if(T){
+  "bob"
+} else {
+  "ted"
+}
+
+```
+
+
+Else if statements
+
+```if(condtion1){
+  true_action_1
+} else if(condition2){
+  true_action_2
+} else if(condition3){
+  true_action_3
+} else {
+  false_action
+}
+```
+
+
+The function ifelse() when we want a vectorized version of an if statement.
+
+```{r}
+ifelse(c(T,F,F,T,T,T), "bob", "ted")
+
+x <- 1:10
+
+ifelse(x %% 2 == 0, "even", "odd")
+
+```
+
+
+Some more complex version of if/the when we have multiple conditions:
+
+1) Using `case_when` in `dplyr`
+
+```{r}
+#case when is also vectorized
+
+dplyr::case_when(
+  #condtions as a comma separate list with a "formula"-like description
+  x %% 2 == 0 ~ "even",
+  x %% 3 == 0 ~ "divisible by 3",
+  TRUE ~ as.character(x^2)
+)
+
+
+```
+
+
+switch() statements can also be used (but is not vectorized)
+
+```{r}
+w <- letters[1:5]
+
+switch(w[[2]],
+       a = "first",
+       b = , #drops to next line to find the return value when the RHS is blank
+       c = "b or c",
+       d = "last",
+       stop("Unkown value!")
+       )
+
+switch(w[[5]],
+       a = "first",
+       b = , #drops to next line to find the return value when the RHS is blank
+       c = "b or c",
+       d = "last",
+       stop("Unkown value!")
+       )
+
+```
+
+
+## For loops
+
+`for(item in vector){do stuff}`
+
+
+```{r}
+for(soccer in 1:5){
+  print(soccer)
+}
+
+for(soccer in c("best","sport","ever")){
+  print(soccer)
+}
+```
+
+
+`next` jumps to the next iteration
+`break` ends the loop
+
+```{r}
+for(i in 1:5){
+  if(i == 2) next
+  if(i == 4) break
+  print(i)
+  
+}
+
+```
+
+
+You should declare data storage outside of a loop; the `vector()` command is handy for this.
+
+```{r}
+means <- c(1,50,20)
+#declaring a vector for data storage
+out <- vector("list", length(means))
+
+for(i in 1:3) out[[i]] <- rnorm(20, means[[i]])
+```
+
+Iteration with `seq_along()`:
+
+```{r}
+for(i in seq_along(means)) print(i)
+```
+
+Issue: for strips attributes
+
+```{r}
+xs <- as.Date(c("2022-09-29", "2022-09-30"))
+
+for(x in xs) print(x)
+
+for(i in seq_along(xs)) print(xs[[i]])
+
+```
+
+## Some other flow control
+
+While statement:
+
+
+`while(codition){do stuff}`
+
+```{r}
+flag <- T
+m <- 1
+while(flag){
+  print(m)
+  m <- m + 1
+  if(m > 10) flag <- F
+}
+
+```
+the `repeat()` command: WARNING INFITE LOOPS. Will run until it hits a break.
+
+---------------------------------------------
+
+# Loblolly model bootstrapped
+
+The task was to do 1000 bootstrap samples of the parameters from a simple model using the Loblolly data. I asked you to plot the histograms of bootstrapped parameterr values and to compare to the theoretical output.
+
+## Bootstrap block
+
+```{r}
+
+out <- vector("list", 1000) #create storage for output
+
+for(i in 1:1000){
+  dw <- Loblolly[sample(nrow(Loblolly), repl = T),]  #resample the data
+  out[[i]] <- coef(lm(height ~ age, data = dw)) #run the model and store the coefficients
+}
+
+```
+
+## Looking at results
+
+We need to do a little manipulation of the output to make it more usable (this is optional). Then we plot the histograms and find the mean and standdard error (square root of the variance). Afterward, we can get the summary of the model using the original data and compare the values.
+
+```{r}
+
+#a little data manipulation
+out <- data.frame(out)
+out <- as.data.frame(t(out)) #transpose `t()` to get a better data frame shape 
+colnames(out) <- c("Intercept", "Age")
+rownames(out) <- NULL
+
+hist(out$Age)
+hist(out$Intercept)
+
+mean(out$Age)
+var(out$Age)^0.5
+
+mean(out$Intercept)
+var(out$Intercept)^0.5
+
+summary(lm(height ~ age, data =Loblolly))
+```
+## Conclusions
+
+We can see that the estimates are pretty similar between the 1000 bootstrap replicates and the theoretical distributions. This would indicate that there might not be significant issues to do, e.g., outliers.
