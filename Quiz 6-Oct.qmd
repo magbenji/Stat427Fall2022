@@ -7,13 +7,13 @@ editor: visual
 
 ## Quiz {.smaller}
 
-Write a function that does the following (give everything other than `x` a default value of 1):
+Write a function that does the following (give everything other than `n` a default value of 1):
 
-1. Creates a set of random normal variates `x` of length `n` with mean `u` and standard deviation `s`.
-2. Using that set of random values, create the variable `y` that has the value `a*x+b`.
-3. Add an error term to `y` that is normal with mean 0 and standard deviation `s_err`.
-4. Runs an `lm()` of `y` versus `x` and then plots the points and the predicted line. NB: The primitive graphics function `abline()` can be used to quickly plot a bivariate regression. On the plot:
-    - Allow the user to specify the color of both the line and the points separately.
-    - Allow the user to specify the labels for the axes and the title
-5. What are the formals of the function? What attribute can you use to see the code for the function?
-6. BONUS: adjust your function so that it can repeat (and overlay) multiple iterations of 1-4 with potentially different values of any of the parameters.  
+1.  Creates a set of random normal variates `x` of length `n` with mean `u` and standard deviation `s`.
+2.  Using that set of random values, create the variable `y` that has the value `a*x+b`.
+3.  Add an error term to `y` that is normal with mean 0 and standard deviation `s_err`.
+4.  Runs an `lm()` of `y` versus `x` and then plots the points and the predicted line. NB: The primitive graphics function `abline()` can be used to quickly plot a bivariate regression. On the plot:
+    -   Allow the user to specify the color of both the line and the points separately.
+    -   Allow the user to specify the labels for the axes and the title
+5.  What are the formals of the function? What attribute can you use to see the code for the function?
+6.  BONUS: adjust your function so that it can repeat (and overlay) multiple iterations of 1-4 with potentially different values of any of the parameters.
