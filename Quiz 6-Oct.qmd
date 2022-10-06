@@ -7,7 +7,7 @@ editor: visual
 
 ## Quiz {.smaller}
 
-Write a function that does the following (give everything other than `x` a default value of 1):
+Write a function that does the following (give everything other than `n` a default value of 1):
 
 1. Creates a set of random normal variates `x` of length `n` with mean `u` and standard deviation `s`.
 2. Using that set of random values, create the variable `y` that has the value `a*x+b`.
