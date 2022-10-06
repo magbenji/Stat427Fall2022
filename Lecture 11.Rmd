@@ -1,0 +1,234 @@
+---
+title: "Lecture 11"
+author: "Ben Ridenhour"
+date: "2022-10-06"
+output: 
+  pdf_document:
+    toc: true
+    toc_depth: 3
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(error = TRUE)
+```
+
+# Summary
+
+1. The quiz covered creating a more complex function.
+    - You needed to use several default options, generate random values, run a linear model, and use some basic plotting
+    - The "bonus" part of the quiz required understanding how to work vectors and flow-control to do a repetitive task
+2. We continued on our discussion of functions. Topics were:
+    - Scoping rules (name masking)
+    - Lazy evaluation
+    - Using dot-dot-dot (...) to pass arguments to subfunctions
+    - Return values (implicit/explicit/invisible)
+    - Halting execution
+
+-----------------------------------------
+
+# Quiz
+
+Write a function that does the following (give everything other than `n` a default value of 1):
+
+1.  Creates a set of random normal variates `x` of length `n` with mean `u` and standard deviation `s`.
+2.  Using that set of random values, create the variable `y` that has the value `a*x+b`.
+3.  Add an error term to `y` that is normal with mean 0 and standard deviation `s_err`.
+4.  Runs an `lm()` of `y` versus `x` and then plots the points and the predicted line. NB: The primitive graphics function `abline()` can be used to quickly plot a bivariate regression. On the plot:
+    -   Allow the user to specify the color of both the line and the points separately.
+    -   Allow the user to specify the labels for the axes and the title
+5.  What are the formals of the function? What attribute can you use to see the code for the function?
+6.  BONUS: adjust your function so that it can repeat (and overlay) multiple iterations of 1-4 with potentially different values of any of the parameters.
+
+```{r}
+
+quiz <- function(n, u = 1, s = 1, a = 1, b = 1, s_err = 1, point_col = 1,
+                 line_col = 1, xlabel = 1, ylabel = 1, title = 1){
+  x <- rnorm(n, mean = u, sd = s)
+  y <- a*x + b
+  y <- y + rnorm(n, sd = s_err)
+  mod <- lm(y ~ x)
+  plot(x,y, xlab = xlabel, ylab = ylabel, main = title, col = point_col)
+  abline(mod, col = line_col)
+}
+
+formals(quiz)
+attr(quiz, "srcref")
+
+```
+
+Check our function:
+
+```{r}
+#defaults
+quiz(20)
+```
+
+```{r}
+quiz(50, u = 50, s = 20, a = 5, b = 100, 10, point_col = "red", line_col = "blue",
+     xlabel = "Random X", ylabel = "Y", title = "5*x+y linear model")
+```
+
+-----------------------------------------
+
+# Lecture Ch 6. Functions (cont.)
+
+## Scoping
+
+Think of scoping as the search path used to find saved values. R uses "name masking" which means that R uses the most "immediate" environment to find a value. In terms of immediacy the list goes:
+
+1. in function (local environment)
+2. in the environment of the function (`environment(f)`)
+3. in global environment
+
+Function names are treated differently than non-function names
+
+```{r}
+testEnv <- new.env()
+
+testEnv$x <- 2
+x <- "bob"
+
+f <- function() print(x)
+
+f()
+
+environment(f) <- testEnv
+
+f()
+
+```
+Bad names
+
+```{r}
+f2 <- function(x) x+2
+f3 <- function(){
+  f2 <- 10
+  f2(f2)
+}
+f3()
+```
+
+## Lazy evaluation
+
+R only ever evaluated **necessary** parts of function calls. For example:
+
+```{r}
+g <- function(x){
+  "Hi"
+}
+
+g(stop("Danger, Will Robinson!"))
+
+g()
+
+```
+
+Why does 
+
+```
+x_ok <- function(x){
+  ! is.null(x) && length(x) == 1 && x > 0
+}
+```
+
+work, while
+
+```
+x_bad <- function(x){
+  ! is.null(x) & length(x) == 1 & x > 0
+}
+```
+
+does not?
+
+## Dot-dot-dot (...)
+
+`...` is used to pass other unlisted arguments to a function. Typically, this is used to pass unspecified arguments to a function within a function.
+
+```{r}
+f <- function(x, ...){
+  sum(x^2, ...)
+}
+
+y <- c(1:10, NA, 11)
+
+f(y)
+
+f(y, na.rm = T)
+```
+
+`...` can be converted to a `list` and then used:
+
+```{r}
+f <- function(...) list(...)
+
+f(x=1:4, y=c("ab","cd"), z = 3 + 4i)
+
+g <- function(...){
+  otherArgs <- list(...)
+  exp(otherArgs$x)
+}
+
+g(x=1:4, y=c("ab","cd"), z = 3 + 4i)
+
+```
+Less commonly, we can refer to ... arguments by position with ..[index]
+
+```{r}
+
+g <- function(...){
+  exp(..1)
+  
+}
+
+g(x=1:4, y=c("ab","cd"), z = 3 + 4i)
+
+```
+
+## Return values
+
+We can return values in 3 different ways:
+
+1. implicit: `f <- function(x) x^3`
+2. explicit: `f <- function(x) return(x^3)`
+3. invisibly: `f <- function(x) invisible(x^3)`
+
+```{r}
+f <- function(x) invisible(x^3)
+
+f(2)
+
+val <- f(2)
+val
+
+withVisible(f(2))
+```
+
+## Halting evaluation
+
+`stop()` can be used to halt evaluation and return and error.
+
+```{r}
+f <- function(x){
+  stop("None shall pass")
+  x^3
+}
+
+f(5)
+```
+
+
+-----------------------------------------
+
+# History
+
+
+```{r}
+# Hmmmm... I lost today's history.
+# Sadness.
+```
+
+
+
+
