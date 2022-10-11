@@ -1,5 +1,5 @@
 ---
-title: "Quiz 4-Oct"
+title: "Quiz 6-Oct"
 subtitle: "Stat 427: R Programming"
 format: revealjs
 editor: visual

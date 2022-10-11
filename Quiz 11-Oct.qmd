@@ -1,0 +1,18 @@
+---
+title: "Quiz 11-Oct"
+subtitle: "Stat 427: R Programming"
+format: revealjs
+editor: visual
+---
+
+## Quiz {.smaller}
+
+1. Suppose you want calculate $e^{\sum_{i=1}^n x_i}$. What are 3 different ways to code this quantity?
+
+2. What is the order of scoping in R functions? (In other words, in what order does R check environments for the existence of a variable; we talked about 3 environments in class.)
+
+3. What kind of return value does the assignment operator `<-` have? What function can help us check this type of return value?
+
+4. How do we anonymously (without specifying them by name) pass arguments from a top level function to sub-functions? What are 3 ways to pass these arguments to subfunctions?
+
+5. Write a simple function that takes a single argument, performs a logical check of the argument, and finally stops executions with an **informative** (!) error message for the user if the logical test fails.

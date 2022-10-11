@@ -1,20 +1,20 @@
 <!DOCTYPE html>
 <html lang="en"><head>
-<script src="Quiz 6-Oct_files/libs/clipboard/clipboard.min.js"></script>
-<script src="Quiz 6-Oct_files/libs/quarto-html/tabby.min.js"></script>
-<script src="Quiz 6-Oct_files/libs/quarto-html/popper.min.js"></script>
-<script src="Quiz 6-Oct_files/libs/quarto-html/tippy.umd.min.js"></script>
-<link href="Quiz 6-Oct_files/libs/quarto-html/tippy.css" rel="stylesheet">
-<link href="Quiz 6-Oct_files/libs/quarto-html/quarto-html.min.css" rel="stylesheet">
-<link href="Quiz 6-Oct_files/libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles"><meta charset="utf-8">
+<script src="Quiz 11-Oct_files/libs/clipboard/clipboard.min.js"></script>
+<script src="Quiz 11-Oct_files/libs/quarto-html/tabby.min.js"></script>
+<script src="Quiz 11-Oct_files/libs/quarto-html/popper.min.js"></script>
+<script src="Quiz 11-Oct_files/libs/quarto-html/tippy.umd.min.js"></script>
+<link href="Quiz 11-Oct_files/libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="Quiz 11-Oct_files/libs/quarto-html/quarto-html.min.css" rel="stylesheet">
+<link href="Quiz 11-Oct_files/libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles"><meta charset="utf-8">
   <meta name="generator" content="quarto-0.9.649">
 
-  <title>Quiz 6-Oct</title>
+  <title>Quiz 11-Oct</title>
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, minimal-ui">
-  <link rel="stylesheet" href="Quiz 6-Oct_files/libs/revealjs/dist/reset.css">
-  <link rel="stylesheet" href="Quiz 6-Oct_files/libs/revealjs/dist/reveal.css">
+  <link rel="stylesheet" href="Quiz 11-Oct_files/libs/revealjs/dist/reset.css">
+  <link rel="stylesheet" href="Quiz 11-Oct_files/libs/revealjs/dist/reveal.css">
   <style>
     code{white-space: pre-wrap;}
     span.smallcaps{font-variant: small-caps;}
@@ -23,11 +23,11 @@
     div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
     ul.task-list{list-style: none;}
   </style>
-  <link rel="stylesheet" href="Quiz 6-Oct_files/libs/revealjs/dist/theme/quarto.css" id="theme">
-  <link href="Quiz 6-Oct_files/libs/revealjs/plugin/quarto-line-highlight/line-highlight.css" rel="stylesheet">
-  <link href="Quiz 6-Oct_files/libs/revealjs/plugin/reveal-menu/menu.css" rel="stylesheet">
-  <link href="Quiz 6-Oct_files/libs/revealjs/plugin/reveal-menu/quarto-menu.css" rel="stylesheet">
-  <link href="Quiz 6-Oct_files/libs/revealjs/plugin/quarto-support/footer.css" rel="stylesheet">
+  <link rel="stylesheet" href="Quiz 11-Oct_files/libs/revealjs/dist/theme/quarto.css" id="theme">
+  <link href="Quiz 11-Oct_files/libs/revealjs/plugin/quarto-line-highlight/line-highlight.css" rel="stylesheet">
+  <link href="Quiz 11-Oct_files/libs/revealjs/plugin/reveal-menu/menu.css" rel="stylesheet">
+  <link href="Quiz 11-Oct_files/libs/revealjs/plugin/reveal-menu/quarto-menu.css" rel="stylesheet">
+  <link href="Quiz 11-Oct_files/libs/revealjs/plugin/quarto-support/footer.css" rel="stylesheet">
   <style type="text/css">
 
   .callout {
@@ -318,24 +318,18 @@
     <div class="slides">
 
 <section id="title-slide" class="center">
-  <h1 class="title">Quiz 6-Oct</h1>
+  <h1 class="title">Quiz 11-Oct</h1>
   <p class="subtitle">Stat 427: R Programming</p>
 </section>
 
 <section id="quiz" class="slide level2 smaller">
 <h2>Quiz</h2>
-<p>Write a function that does the following (give everything other than <code>n</code> a default value of 1):</p>
 <ol type="1">
-<li>Creates a set of random normal variates <code>x</code> of length <code>n</code> with mean <code>u</code> and standard deviation <code>s</code>.</li>
-<li>Using that set of random values, create the variable <code>y</code> that has the value <code>a*x+b</code>.</li>
-<li>Add an error term to <code>y</code> that is normal with mean 0 and standard deviation <code>s_err</code>.</li>
-<li>Runs an <code>lm()</code> of <code>y</code> versus <code>x</code> and then plots the points and the predicted line. NB: The primitive graphics function <code>abline()</code> can be used to quickly plot a bivariate regression. On the plot:
-<ul>
-<li>Allow the user to specify the color of both the line and the points separately.</li>
-<li>Allow the user to specify the labels for the axes and the title</li>
-</ul></li>
-<li>What are the formals of the function? What attribute can you use to see the code for the function?</li>
-<li>BONUS: adjust your function so that it can repeat (and overlay) multiple iterations of 1-4 with potentially different values of any of the parameters.</li>
+<li><p>Suppose you want calculate <span class="math inline">\(e^{\sum_{i=1}^n x_i}\)</span>. What are 3 different ways to code this quantity?</p></li>
+<li><p>What is the order of scoping in R functions? (In other words, in what order does R check environments for the existence of a variable; we talked about 3 environments in class.)</p></li>
+<li><p>What kind of return value does the assignment operator <code>&lt;-</code> have? What function can help us check this type of return value?</p></li>
+<li><p>How do we anonymously (without specifying them by name) pass arguments from a top level function to sub-functions? What are 3 ways to pass these arguments to subfunctions?</p></li>
+<li><p>Write a simple function that takes a single argument, performs a logical check of the argument, and finally stops executions with an <strong>informative</strong> (!) error message for the user if the logical test fails.</p></li>
 </ol>
 <div class="footer footer-default">
 
@@ -345,19 +339,19 @@
   </div>
 
   <script>window.backupDefine = window.define; window.define = undefined;</script>
-  <script src="Quiz 6-Oct_files/libs/revealjs/dist/reveal.js"></script>
+  <script src="Quiz 11-Oct_files/libs/revealjs/dist/reveal.js"></script>
   <!-- reveal.js plugins -->
-  <script src="Quiz 6-Oct_files/libs/revealjs/plugin/quarto-line-highlight/line-highlight.js"></script>
-  <script src="Quiz 6-Oct_files/libs/revealjs/plugin/pdf-export/pdfexport.js"></script>
-  <script src="Quiz 6-Oct_files/libs/revealjs/plugin/reveal-menu/menu.js"></script>
-  <script src="Quiz 6-Oct_files/libs/revealjs/plugin/reveal-menu/quarto-menu.js"></script>
-  <script src="Quiz 6-Oct_files/libs/revealjs/plugin/quarto-support/support.js"></script>
+  <script src="Quiz 11-Oct_files/libs/revealjs/plugin/quarto-line-highlight/line-highlight.js"></script>
+  <script src="Quiz 11-Oct_files/libs/revealjs/plugin/pdf-export/pdfexport.js"></script>
+  <script src="Quiz 11-Oct_files/libs/revealjs/plugin/reveal-menu/menu.js"></script>
+  <script src="Quiz 11-Oct_files/libs/revealjs/plugin/reveal-menu/quarto-menu.js"></script>
+  <script src="Quiz 11-Oct_files/libs/revealjs/plugin/quarto-support/support.js"></script>
   
 
-  <script src="Quiz 6-Oct_files/libs/revealjs/plugin/notes/notes.js"></script>
-  <script src="Quiz 6-Oct_files/libs/revealjs/plugin/search/search.js"></script>
-  <script src="Quiz 6-Oct_files/libs/revealjs/plugin/zoom/zoom.js"></script>
-  <script src="Quiz 6-Oct_files/libs/revealjs/plugin/math/math.js"></script>
+  <script src="Quiz 11-Oct_files/libs/revealjs/plugin/notes/notes.js"></script>
+  <script src="Quiz 11-Oct_files/libs/revealjs/plugin/search/search.js"></script>
+  <script src="Quiz 11-Oct_files/libs/revealjs/plugin/zoom/zoom.js"></script>
+  <script src="Quiz 11-Oct_files/libs/revealjs/plugin/math/math.js"></script>
   <script>window.define = window.backupDefine; window.backupDefine = undefined;</script>
 
   <script>
