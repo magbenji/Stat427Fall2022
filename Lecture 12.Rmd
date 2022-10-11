@@ -1,0 +1,307 @@
+---
+title: "Lecture 12"
+author: "Ben Ridenhour"
+date: "2022-10-11"
+output: 
+  pdf_document:
+    toc: true
+    toc_depth: 3
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(error = TRUE)
+```
+
+# Summary
+
+1. The quiz covered several aspects of functions including: ways of calling functions, scoping, return values, use of `...`, and stopping function execution.
+
+2. We finished covering Ch. 6 for the lecture. We covered using `on.exit`, declaring prefix vs. infix functions, and declaring replacement functions
+
+3. Toward the end of class, groups worked together on the "bonus" question on the quiz from last Thursday (6-Oct). I asked everyone to complete this task **before** handing in the assignment.
+
+4. I forgot to turn on the Zoom recording until after I discussed the quiz. Sorry!
+
+--------------------------------
+
+# Quiz 
+
+1.  Suppose you want calculate $e^{\sum_{i=1}^n x_i}$. What are 3 different ways to code this quantity?
+
+```{r}
+x <- 1:5
+
+y <- sum(x); exp(y) #intermediate storage
+
+exp(sum(x)) #nesting functions
+
+library(magrittr)
+
+x %>% sum() %>% exp()
+
+#### BONUS 4th
+
+x |> sum() |> exp()
+```
+
+2.  What is the order of scoping in R functions? (In other words, in what order does R check environments for the existence of a variable; we talked about 3 environments in class.)
+
+```{r}
+# in function
+
+f <- function(){x <- 3; x}
+f()
+
+
+# global environment
+f <- function() x
+f()
+
+# in the functions environment
+environment(f)
+
+theEnv <- new.env()
+environment(f) <- theEnv
+theEnv$x <- "bob"
+f()
+```
+
+
+3.  What kind of return value does the assignment operator `<-` have? What function can help us check this type of return value?
+
+```{r}
+
+#we get an invisible return with <-
+a <- 2
+
+withVisible(a <- 2)
+```
+
+
+4.  How do we anonymously (without specifying them by name) pass arguments from a top level function to sub-functions? What are 3 ways to pass these arguments to subfunctions?
+
+```{r}
+
+#we use ... to pass off anonymous arguments
+
+f <- function(...){
+  sum(...) #no manipulation
+}
+
+
+f <- function(...){
+  argList <- list(...)
+  sum(argList[["x"]]) #this assumes that ... has an element named x
+}
+
+f <- function(...){
+  sum(..1) #take the first argument in ... and pass it to sum
+}
+
+
+```
+
+5.  Write a simple function that takes a single argument, performs a logical check of the argument, and finally stops executions with an **informative** (!) error message for the user if the logical test fails.
+
+```{r}
+
+f <- function(x){
+  if(! is.integer(x)) stop("x was not an integer!")
+  x^2
+}
+
+f(2L)
+
+f(2.1)
+```
+
+--------------------------------
+
+# Lecture Ch 6. Functions continued...
+
+## Exiting gracefully
+
+We can use the `on.exit( expr, add = T)` command to have functions do something when they stop. `on.exit` commands run in the order they appear in the function body unless we use the `after = F` option.
+
+```{r}
+
+f <- function(x){
+  on.exit(message("a"), add = T)
+  on.exit(message("b"), add = T)
+  log(x)
+}
+
+f(10)
+
+f <- function(x){
+  on.exit(message("a"), add = T)
+  on.exit(message("b"), add = T, after = F)
+  log(x)
+}
+
+f(10)
+
+```
+
+
+## 3 type of functions
+
+### Infix vs prefix functions
+
+Most of the functions that you write are prefix. These have the structure of `FUNCTION(ARGS)`. We've also seen several "infix" functions, where the function goes in the middle of the arguments and evaluation proceeds from left to right.
+
+For example,
+
+```{r}
+3 + 4
+
+a <- 3
+
+#we can always change an infix operator to be a prefix function
+
+`+`(3,4)
+
+
+```
+
+We can write our own infix functions if we wish! To do this we use the `% SYMB %` construction.
+
+```{r}
+
+`%omg%` <- function(LHS, RHS) LHS^RHS
+
+4 %omg% 3
+
+
+```
+### Replacement Functions
+
+R has numerous functions that modify arguments "in place" and these are called replacement functions.
+
+```{r}
+x <- 1:3
+names(x) <-  letters[1:3] #replacing the names attribute with something new
+```
+
+In order to write a replacement function, we must use arguments named `x` and `value` and write the function in this manner:
+
+```{r}
+`setBob<-` <- function(x, value){
+  attr(x, "Bob") <- value
+  x
+}
+
+z <- 1:5
+
+setBob(z) <- "ooph"
+
+attributes(z)
+
+```
+If you need more arguments for your replacement function, put those arguments **between** `x` and `value`.
+
+```{r}
+`setBob<-` <- function(x, count = 1,  value){
+  attr(x, "Bob") <- rep(value, count)
+  x
+}
+
+setBob(z) <- "yes"
+
+attributes(z)
+
+setBob(z,3) <- "no" #set count = 3
+
+attributes(z)
+
+```
+--------------------------------
+
+# History
+
+
+Commands I ran today...
+
+```{r}
+# x <- 1:5
+# y <- sum(x); exp(y) #intermediate storage
+# exp(sum(x)) #nesting functions
+# library(magrittr)
+# x %>% sum() %>% exp()
+# x <- 1:5
+# y <- sum(x); exp(y) #intermediate storage
+# exp(sum(x)) #nesting functions
+# library(magrittr)
+# x %>% sum() %>% exp()
+# #### BONUS 4th
+# x |> sum() |> exp()
+# # in function
+# f <- function(){x <- 3; x}
+# f()
+# # global environment
+# f <- function() x
+# f()
+# # in the functions environment
+# environment(f)
+# theEnv <- new.env()
+# environment(f) <- theEnv
+# theEnv$x <- "bob"
+# f()
+# a <- 2
+# #we get an invisible return with <-
+# a <- 2
+# withVisible(a <- 2)
+# f <- function(x){
+# if(! is.integer(x)) stop("x was not an integer!")
+# x^2
+# }
+# f(2L)
+# f <- function(x){
+# if(! is.integer(x)) stop("x was not an integer!")
+# x^2
+# }
+# f(2L)
+# f(2.1)
+# f <- function(x){
+# on.exit(message("a"), add = T)
+# on.exit(message("b"), add = T)
+# log(x)
+# }
+# f(10)
+# f <- function(x){
+# on.exit(message("a"), add = T)
+# on.exit(message("b"), add = T)
+# log(x)
+# }
+# f(10)
+# f <- function(x){
+# on.exit(message("a"), add = T)
+# on.exit(message("b"), add = T, after = F)
+# log(x)
+# }
+# f(10)
+# 3 + 4
+# a <- 3
+# #we can always change an infix operator to be a prefix function
+# `+`(3,4)
+# `%omg%` <- function(LHS, RHS) LHS^RHS
+# 4 %omg% 3
+# x <- 1:3
+# names(x) <-  letters[1:3] #replacing the names attribute with something new
+# `setBob <-` <- function(x, value){
+# attr(x, "Bob") <- value
+# x
+# }
+# z <- 1:5
+# setBob(z) <- "ooph"
+# `setBob<-` <- function(x, value){
+# attr(x, "Bob") <- value
+# x
+# }
+# z <- 1:5
+# setBob(z) <- "ooph"
+# attributes(z)
+
+```
+
