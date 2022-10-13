@@ -1,0 +1,23 @@
+---
+title: "Quiz 13-Oct"
+subtitle: "Stat 427: R Programming"
+format: revealjs
+editor: visual
+---
+
+## Quiz {.smaller}
+
+Reproduce the figure below. The signature of your function should be:
+
+```
+quiz_update <- function(n, u = 1, s = 1, a = 1, b = 1, s_err = 1, ...){...}
+```
+
+And the call that produced this figure is:
+
+    quiz_update(c(10,20,30), u = c(10,20), a = c(-5,1,10), b = c(0,10,15), s_err = c(1,5,0.1), 
+        col = c("green","blue","red"), xlab = "Random X", main = "3 cool lines", ylab = "Y")
+
+![](3CoolLines.png){width="384"}
+
+I made 3 assumptions in my function that you need to utilize: 1) If one of the parameter vectors is shorter than another, I used `rep(x, length = n)` to fill in missing values. 2) If the user does not specify the `xlim` and `ylim` arguments to the plot, the plot adds a 5% buffer on each side of the range of x values and y values. 3) If the user specifies a color vector (as I did above), then the line and points for a particular parameter set get that color.
