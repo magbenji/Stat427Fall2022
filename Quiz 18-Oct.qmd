@@ -1,0 +1,19 @@
+---
+title: "Quiz 18-Oct"
+subtitle: "Stat 427: R Programming"
+format: revealjs
+editor: visual
+---
+
+## Quiz {.smaller}
+
+1. Write a replacement function that takes a vector and repeats it some number of times. Execute the function on the vector `1:5` and repeat it 3 times.
+
+2. Write an infix function that does the same thing as (1). Execute the function.
+
+3. Adjust (1) so that it takes an optional argument and appends it to the vector prior to doing the repetition. Execute the command with arguments specifying the vector `1:5` repeated 3 times with an appended vector `6:10`.
+
+4. Suppose you've been given a list and you don't know what items (elements) are in the list. What command can you use to return a logical value that tells you if the element `res` is in the list?
+
+5. During our exercise last Thursday the involved plotting points and lines, several plotting commands were used/discussed. Which plotting command was a "high level" command? Name 2 commands that we used that are "primitive/low level" commands. Why is it important to know the difference? (How do high level and low level commands interact?)
+

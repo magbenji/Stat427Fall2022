@@ -1,0 +1,265 @@
+---
+title: "Homework Question"
+author: "Ben Ridenhour"
+date: "`r Sys.Date()`"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# The question....
+
+Write a function that does the following (give everything other than `n` a default value of 1):
+
+1.  Creates a set of random normal variates `x` of length `n` with mean `u` and standard deviation `s`.
+2.  Using that set of random values, create the variable `y` that has the value `a*x+b`.
+3.  Add an error term to `y` that is normal with mean 0 and standard deviation `s_err`.
+4.  Runs an `lm()` of `y` versus `x` and then plots the points and the predicted line. NB: The primitive graphics function `abline()` can be used to quickly plot a bivariate regression. On the plot:
+    -   Allow the user to specify the color of both the line and the points separately.
+    -   Allow the user to specify the labels for the axes and the title
+5.  What are the formals of the function? What attribute can you use to see the code for the function?
+6.  **BONUS: adjust your function so that it can repeat (and overlay) multiple iterations of 1-4 with potentially different values of any of the parameters.**
+
+Step 6 is what I am asking you to tackle using your knowledge of functions and flow control.
+
+# Old quiz "solution"
+
+Here is the original function that I wrote in class that 
+
+```{r}
+quiz <- function(n, u = 1, s = 1, a = 1, b = 1, s_err = 1, point_col = 1,
+                 line_col = 1, xlabel = 1, ylabel = 1, title = 1){
+  x <- rnorm(n, mean = u, sd = s)
+  y <- a*x + b
+  y <- y + rnorm(n, sd = s_err)
+  mod <- lm(y ~ x)
+  plot(x,y, xlab = xlabel, ylab = ylabel, main = title, col = point_col)
+  abline(mod, col = line_col)
+}
+
+```
+
+
+The basic logic of the function follows the quiz outline. The first line generate random values of x given some parameters (u,s). The second line calculates y; the 4th line adds an error based on the s_err parameters. The 5th line runs the linear model. The 5th and 6th lines plot the results.
+
+Check our function:
+
+```{r}
+#defaults
+quiz(20)
+```
+
+```{r}
+quiz(50, u = 50, s = 20, a = 5, b = 100, 10, point_col = "red", line_col = "blue",
+     xlabel = "Random X", ylabel = "Y", title = "5*x+y linear model")
+```
+
+# Beefing up our function
+
+So the task is to make it so that we can use our function on multiple parameter values. In my opinion, the first thing to do would be to determine the number of times we need to create a line and points. Thus we need to determine which of the parameters has the largest number of parameters. Let's also change the signature of the function to use the `...` to pass arguments to subfunctions.
+
+```
+#new signature
+quiz_update <- function(n, u = 1, s = 1, a = 1, b = 1, s_err = 1, ...){
+  nLoops <- max(length(n), length(u), length(s), length(a), length(b), length(s_err))
+}
+```
+
+The above code finds the length of the longest parameter argument and saves it as `nLoops`. Next we want make it so that, when we loop over our parameters, they all have the same lengths. You could choose to do this in multiple ways (for example, you could do all possible combinations of the given parameters) but let's keep it simple and do the "R"-thing and repeat what you've been given.
+
+```
+#new signature
+quiz_update <- function(n, u = 1, s = 1, a = 1, b = 1, s_err = 1, ...){
+  nLoops <- max(length(n), length(u), length(s), length(a), length(b), length(s_err)) #nLoop = length of longest arguments
+  n <- rep(n, length = nLoops)
+  u <- rep(u, length = nLoops)
+  s <- rep(s, length = nLoops)
+  a <- rep(a, length = nLoops)
+  b <- rep(b, length = nLoops)
+  s_err <- rep(s_err, length = nLoops) #now all parameter vectors have the same length
+}
+```
+
+We could simplify the above by noting that we're doing the same thing multiple times and using an apply command. Here is what that might look like:
+
+```
+#new signature
+quiz_update <- function(n, u = 1, s = 1, a = 1, b = 1, s_err = 1, ...){
+  parameters <- list(n=n,u=u,s=s,a=a,b=b,s_err=s_err)
+  nLoops <- max(sapply(parameters, length))
+  parameters <- lapply(parameters, function(x) rep(x, length = nLoop)) #note the anonymous/headless function
+}
+```
+
+At this point, we just need to execute the previous function for each set of parameters. We need (should?) decide what we need in each loop. If you reduce it, each loop needs to produce a data frame or tibble (preferrably) with the variables x and y.
+
+```
+library(tibble)
+#new signature
+quiz_update <- function(n, u = 1, s = 1, a = 1, b = 1, s_err = 1, ...){
+  parameters <- list(n=n,u=u,s=s,a=a,b=b,s_err=s_err)
+  nLoops <- max(sapply(parameters, length))
+  parameters <- lapply(parameters, function(x) rep(x, length = nLoops)) #note the anonymous/headless function
+  frames <- vector("list", nLoops)
+  for(i in seq_along(frames)) frames[[i]] <- tibble(x = rnorm(parameters$n[[i]], mean = parameters$u[[i]], sd = parameters$s[[i]]),
+                                                    y = parameters$a[[i]] * x + parameters$b[[i]] + rnorm(parameters$n[[i]], sd = parameters$s_err[[i]]))
+}
+
+```
+
+The last thing we need to do is create the plots. Again, we need to think about the strategy to do this. Each loop creates a plot of the points and a line from the lm. We can use the `...` to pass lots of options to the plot.
+
+```
+library(tibble)
+#new signature
+quiz_update <- function(n, u = 1, s = 1, a = 1, b = 1, s_err = 1, ...){
+  parameters <- list(n=n,u=u,s=s,a=a,b=b,s_err=s_err)
+  nLoops <- max(sapply(parameters, length))
+  parameters <- lapply(parameters, function(x) rep(x, length = nLoops)) #note the anonymous/headless function
+  frames <- vector("list", nLoops)
+  for(i in seq_along(frames)) frames[[i]] <- tibble(x = rnorm(parameters$n[[i]], mean = parameters$u[[i]], sd = parameters$s[[i]]),
+                                                    y = parameters$a[[i]] * x + parameters$b[[i]] + rnorm(parameters$n[[i]], sd = parameters$s_err[[i]]))
+  plot(NULL, ...)
+  for(i in seq_along(frames)){
+    points(frames[[i]], col = i)
+    abline(lm(y~x, data=frames[[i]]), col = i)
+  }
+}
+```
+
+And that's it! Let's try out our fancy function:
+
+```{r}
+library(tibble)
+#new signature
+quiz_update <- function(n, u = 1, s = 1, a = 1, b = 1, s_err = 1, ...){
+  parameters <- list(n=n,u=u,s=s,a=a,b=b,s_err=s_err)
+  nLoops <- max(sapply(parameters, length))
+  parameters <- lapply(parameters, function(x) rep(x, length = nLoops)) #note the anonymous/headless function
+  frames <- vector("list", nLoops)
+  for(i in seq_along(frames)) frames[[i]] <- tibble(x = rnorm(parameters$n[[i]], mean = parameters$u[[i]], sd = parameters$s[[i]]),
+                                                    y = parameters$a[[i]] * x + parameters$b[[i]] + rnorm(parameters$n[[i]], sd = parameters$s_err[[i]]))
+  plot(NULL, ...)
+  for(i in seq_along(frames)){
+    points(frames[[i]], col = i)
+    abline(lm(y~x, data=frames[[i]]), col = i)
+  }
+}
+```
+
+
+Try replicating the earlier plots:
+
+```{r}
+quiz_update(20, xlim = c(-1,3), ylim = c(0,5))
+```
+We lack color control but let's try the second one too:
+
+```{r}
+quiz_update(50, u = 50, s = 20, a = 5, b = 100, s_err=10, xlim = c(0,100), ylim = c(100,600),
+     xlab = "Random X", ylab = "Y", main = "5*x+y linear model")
+```
+
+Let's try using our new "vectorized" capabilities:
+
+```{r}
+quiz_update(c(10,20,30), s_err = c(1,5,0.1), xlim = c(-1,3), ylim = c(0,5))
+```
+
+# Making it better! 
+
+
+## X and Y limits
+
+Okay, maybe we don't want to specify the xlim and ylim all the time. Let's see if we can handle this:
+
+```{r}
+quiz_update <- function(n, u = 1, s = 1, a = 1, b = 1, s_err = 1, ...){
+  parameters <- list(n=n,u=u,s=s,a=a,b=b,s_err=s_err)
+  nLoops <- max(sapply(parameters, length))
+  parameters <- lapply(parameters, function(x) rep(x, length = nLoops)) #note the anonymous/headless function
+  frames <- vector("list", nLoops)
+  for(i in seq_along(frames)) frames[[i]] <- tibble(x = rnorm(parameters$n[[i]], mean = parameters$u[[i]], sd = parameters$s[[i]]),
+                                                    y = parameters$a[[i]] * x + parameters$b[[i]] + rnorm(parameters$n[[i]], sd = parameters$s_err[[i]]))
+  
+  argList <- list(...)
+  
+  if(is.null(argList[["xlim"]])){
+    rx <- range(unlist(lapply(frames, function(t) range(t$x))))
+    argList[["xlim"]] <- (rx - mean(rx)) * 1.1 + mean(rx)
+  }
+  
+  if(is.null(argList[["ylim"]])){
+    ry <- range(unlist(lapply(frames, function(t) range(t$y))))
+    argList[["ylim"]] <- (ry - mean(ry)) * 1.1 + mean(ry)
+  }
+  
+  do.call(plot, c(list(NULL),argList)) #note c(list(NULL), ...) construction
+  
+  for(i in seq_along(frames)){
+    points(frames[[i]], col = i)
+    abline(lm(y~x, data=frames[[i]]), col = i)
+  }
+}
+```
+
+
+```{r}
+quiz_update(20)
+quiz_update(c(10,20,30), s_err = c(1,5,0.1))
+```
+
+
+## Colors
+
+Maybe I want to be able to specify color for the lines. What should change?
+
+```{r}
+
+quiz_update <- function(n, u = 1, s = 1, a = 1, b = 1, s_err = 1, ...){
+  parameters <- list(n=n,u=u,s=s,a=a,b=b,s_err=s_err)
+  nLoops <- max(sapply(parameters, length))
+  parameters <- lapply(parameters, function(x) rep(x, length = nLoops)) #note the anonymous/headless function
+  frames <- vector("list", nLoops)
+  for(i in seq_along(frames)) frames[[i]] <- tibble(x = rnorm(parameters$n[[i]], mean = parameters$u[[i]], sd = parameters$s[[i]]),
+                                                    y = parameters$a[[i]] * x + parameters$b[[i]] + rnorm(parameters$n[[i]], sd = parameters$s_err[[i]]))
+  
+  argList <- list(...)
+  
+  if(is.null(argList[["xlim"]])){
+    rx <- range(unlist(lapply(frames, function(t) range(t$x))))
+    argList[["xlim"]] <- (rx - mean(rx)) * 1.1 + mean(rx)
+  }
+  
+  if(is.null(argList[["ylim"]])){
+    ry <- range(unlist(lapply(frames, function(t) range(t$y))))
+    argList[["ylim"]] <- (ry - mean(ry)) * 1.1 + mean(ry)
+  }
+  
+  do.call(plot, c(list(NULL),argList)) #note c(list(NULL), ...) construction
+  
+  for(i in seq_along(frames)){
+    plotColor <- ifelse(is.null(argList[["col"]]), i, argList$col[[i]])
+    points(frames[[i]], col = plotColor)
+    abline(lm(y~x, data=frames[[i]]), col = plotColor)
+  }
+}
+```
+
+
+```{r}
+quiz_update(c(10,20,30), s_err = c(1,5,0.1), col = c("green","blue","red"))
+```
+
+We could obviously keep extending our function to have more and more capabilities... but hopefully you get the idea!
+
+Let's try one last one:
+
+```{r}
+
+quiz_update(c(10,20,30), u = c(10,20), a = c(-5,1,10), b = c(0,10,15), s_err = c(1,5,0.1), col = c("green","blue","red"),
+            xlab = "Random X", main = "3 cool lines", ylab = "Y")
+
+```
