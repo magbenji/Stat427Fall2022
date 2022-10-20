@@ -1,0 +1,25 @@
+---
+title: "Quiz 20-Oct"
+subtitle: "Stat 427: R Programming"
+format: revealjs
+editor: visual
+---
+
+## Quiz {.smaller}
+
+1. What is the only environment in R without a parent environment?
+
+2. What package can we use that has many "convenience" functions for working with environments? (Load it!)
+
+3. Write a function that takes a single argument `n` and returns *n* random normals. When the function completes provide the user a `summary()` of the randoms. Also, give the user an informational message telling them how many random numbers were generated. Store the output and verify that is a vector of doubles.
+
+4. Create an environment `x` that has bindings `a = 3`, `b = "apple"`, and `c = 1:5`.
+    - Add 3 new bindings (say d, e, and f) using 3 different methods (functions).
+    - Print out a listing of all of the bindings using 2 different methods.
+    - Check if the environment has a binding named `bob` using 2 different methods.
+    - Write a function `f` and bind it to the environment. `f` should print out the value of `b` within the environment `x`.
+    - Return the value of `c` using an `rlang` function.
+    - Create a copy of `x` called `y`. Check if they are indeed "copies" of each other.
+    - Remove the value of `a` from `x`. Print out the contents of `y`.
+    - Print out the **entire** search path for the function `f`.
+    
