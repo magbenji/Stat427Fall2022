@@ -1,0 +1,344 @@
+---
+title: "Lecture 14"
+author: "Ben Ridenhour"
+date: "2022-10-20"
+output: 
+  pdf_document:
+      toc: true
+      toc_depth: 3
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(error = TRUE)
+```
+
+# Summary
+
+1. ** Exam 2 next Thursday, 27 Oct! **
+2. We basically went over the quiz which covered a bunch of the functions for working with environments. I also had one question regarding the use of the `on.exit()` function.
+3. We discussed recursive functions and wrote an example.
+4. We began a discussion of the evaluation environment, call stacks, and debugging.
+
+
+--------------------------------
+
+# Quiz
+
+1.  What is the only environment in R without a parent environment?
+
+The empty environment has no parent; `empty_env()`.
+
+2.  What package can we use that has many "convenience" functions for working with environments? (Load it!)
+
+```{r}
+library(rlang)
+```
+
+3.  Write a function that takes a single argument `n` and returns *n* random normals. When the function completes provide the user a `summary()` of the randoms. Also, give the user an informational message telling them how many random numbers were generated. Store the output and verify that is a vector of doubles.
+
+```{r}
+f <- function(n){
+  on.exit(print(summary(x)))
+  on.exit(message(paste("The function generated ",n, " random normals.")), add = T, after = F)
+  x <- rnorm(n) 
+}
+
+test <- f(10)
+test
+
+```
+
+4.  Create an environment `x` that has bindings `a = 3`, `b = "apple"`, and `c = 1:5`.
+
+    -   Add 3 new bindings (say d, e, and f) using 3 different methods (functions).
+    -   Print out a listing of all of the bindings using 2 different methods.
+    -   Check if the environment has a binding named `bob` using 2 different methods.
+    -   Write a function `f` and bind it to the environment. `f` should print out the value of `b` within the environment `x`.
+    -   Return the value of `c` using an `rlang` function.
+    -   Create a copy of `x` called `y`. Check if they are indeed "copies" of each other.
+    -   Remove the value of `a` from `x`. Print out the contents of `y`.
+    -   Print out the **entire** search path for the function `f`.
+
+
+```{r}
+# Create an environment `x` that has bindings `a = 3`, `b = "apple"`, and `c = 1:5`.
+
+x <- env(a = 3, b = "apple", c = 1:5)
+x <- new.env()
+x$a <- 3
+x$b <- "apple"
+x[["c"]] <- 1:5
+
+# Add 3 new bindings (say d, e, and f) using 3 different methods (functions).
+
+x$d <- letters[1:3]
+env_bind(x, e = "hi")
+env_poke(x, "f", function(x) x^2)
+
+
+# Print out a listing of all of the bindings using 2 different methods.
+
+env_print(x)
+names(x)
+
+# Check if the environment has a binding named `bob` using 2 different methods.
+
+x[["bob"]]
+env_has(x, "bob")
+
+# Write a function `f` and bind it to the environment. `f` should print out the value of `b` within the environment `x`
+
+x$g <- function() b
+environment(x$g) #global environment
+environment(x$g) <- x
+x$g()
+
+# Return the value of `c` using an `rlang` function.
+
+env_get(x, "c", default = NA)
+
+# Create a copy of `x` called `y`. Check if they are indeed "copies" of each other.
+
+y <- x
+identical(x,y)
+
+# Remove the value of `a` from `x`. Print out the contents of `y`.
+
+env_unbind(x, "a")
+env_print(y)
+
+
+# Print out the **entire** search path for the function `f`.
+
+environment(x$g)
+env_parents(environment(x$g), last = empty_env())
+
+```
+
+--------------------------------
+
+# Lecture Ch 7 Environments (cont.)
+
+When working with environments, it can be useful to write recursive functions. By a "recursive" function, we mean a function that calls itself again/repeatedly. Let's create a function that searches the path for a particular binding:
+
+```{r}
+findIt <- function(name, env = current_env()){
+  if(identical(env, empty_env())){
+    stop("Can't find ", name)
+  } else if(env_has(env, name)){
+    return(env)
+  } else {
+    findIt(name, env_parent(env))
+  }
+}
+
+```
+
+
+```{r}
+findIt("mean", x)
+#findIt("huh", y)
+findIt("glm")
+```
+```{r}
+search() #base
+search_envs() #rlang
+```
+
+## Evaluation environment
+
+All variables created within a function exist in temporary environment we call the evaluation environment. 
+
+```{r}
+f <- function(){
+  a <- 1
+  print(a)
+}
+```
+
+"a" is only created when f is evaluated and then disappears.
+
+If we get an error we can use traceback() to get the **call stack**. 
+
+```{r}
+f <- function(x){x <- 2; g(x)}
+g <- function(x){x <- 3; h(x)}
+h <- function(x) stop("!!!")
+f(1)
+traceback()
+```
+
+The lobstr::cst() functions somewhat similarly:
+
+```{r}
+f <- function(x){x <- 2; g(x)}
+g <- function(x){x <- 3; h(x)}
+h <- function(x) lobstr::cst()
+f(1)
+```
+
+
+Each step of stack is called a frame (evaluation context). Frames have 3 parts:
+
+1. the expression
+2. the evaluation environment
+3. the parent environment
+
+
+--------------------------------
+
+# History
+
+```{r}
+# library(rlang)
+# f <- function(n){
+# on.exit(print(summary(x)))
+# on.exit(message(paste("The function generated ",n, " random normals.")), add = T)
+# x <- rnorm(n)
+# }
+# test <- f(10)
+# test
+# f <- function(n){
+# on.exit(print(summary(x)))
+# on.exit(message(paste("The function generated ",n, " random normals.")), add = T, after = F)
+# x <- rnorm(n)
+# }
+# test <- f(10)
+# test
+# # Create an environment `x` that has bindings `a = 3`, `b = "apple"`, and `c = 1:5`.
+# x <- env(a = 3, b = "apple", c = 1:5)
+# x <- new.env()
+# x$a <- 3
+# x$b <- "apple"
+# x[["c"]] <- 1:5
+# # Add 3 new bindings (say d, e, and f) using 3 different methods (functions).
+# x$d <- letters[1:3]
+# env_bind(x, e = "hi")
+# env_poke(x, f = function(x) x^2)
+# # Create an environment `x` that has bindings `a = 3`, `b = "apple"`, and `c = 1:5`.
+# x <- env(a = 3, b = "apple", c = 1:5)
+# x <- new.env()
+# x$a <- 3
+# x$b <- "apple"
+# x[["c"]] <- 1:5
+# # Add 3 new bindings (say d, e, and f) using 3 different methods (functions).
+# x$d <- letters[1:3]
+# env_bind(x, e = "hi")
+# env_poke(x, "f", function(x) x^2)
+# # Print out a listing of all of the bindings using 2 different methods.
+# env_print(x)
+# names(x)
+# # Check if the environment has a binding named `bob` using 2 different methods.
+# x[["bob"]]
+# env_has(x, "bob")
+# # Write a function `f` and bind it to the environment. `f` should print out the value of `b` within the environment `x`
+# x$g <- function() b
+# environment(x$g) #global environment
+# environment(x$g) <- x
+# x$g()
+# # Return the value of `c` using an `rlang` function.
+# env_get(x, "c", default = NA)
+# # Create a copy of `x` called `y`. Check if they are indeed "copies" of each other.
+# y <- x
+# identical(x,y)
+# # Remove the value of `a` from `x`. Print out the contents of `y`.
+# env_unbind(x, "a")
+# env_print(y)
+# # Print out the **entire** search path for the function `f`.
+# env_parents(environment(x$g), last = empty_env())
+# # Create an environment `x` that has bindings `a = 3`, `b = "apple"`, and `c = 1:5`.
+# x <- env(a = 3, b = "apple", c = 1:5)
+# x <- new.env()
+# x$a <- 3
+# x$b <- "apple"
+# x[["c"]] <- 1:5
+# # Add 3 new bindings (say d, e, and f) using 3 different methods (functions).
+# x$d <- letters[1:3]
+# env_bind(x, e = "hi")
+# env_poke(x, "f", function(x) x^2)
+# # Print out a listing of all of the bindings using 2 different methods.
+# env_print(x)
+# names(x)
+# # Check if the environment has a binding named `bob` using 2 different methods.
+# x[["bob"]]
+# env_has(x, "bob")
+# # Write a function `f` and bind it to the environment. `f` should print out the value of `b` within the environment `x`
+# x$g <- function() b
+# environment(x$g) #global environment
+# environment(x$g) <- x
+# x$g()
+# # Return the value of `c` using an `rlang` function.
+# env_get(x, "c", default = NA)
+# # Create a copy of `x` called `y`. Check if they are indeed "copies" of each other.
+# y <- x
+# identical(x,y)
+# # Remove the value of `a` from `x`. Print out the contents of `y`.
+# env_unbind(x, "a")
+# env_print(y)
+# # Print out the **entire** search path for the function `f`.
+# environment(x$g)
+# env_parents(environment(x$g), last = empty_env())
+# findIt <- function(name, env){
+# if(identical(env, empty_env())){
+# stop("Can't find", name)
+# } else if(env_has(env, name)){
+# return(env)
+# } else {
+# findIt(name, env_parent(env))
+# }
+# }
+# findIt("mean", environment(x))
+# environment(x)
+# x
+# findIt("mean",x)
+# findIt("mean", x)
+# fintIt("huh", y)
+# findIt("mean", x)
+# findIt("huh", y)
+# findIt <- function(name, env){
+# if(identical(env, empty_env())){
+# stop("Can't find ", name)
+# } else if(env_has(env, name)){
+# return(env)
+# } else {
+# findIt(name, env_parent(env))
+# }
+# }
+# findIt("mean", x)
+# findIt("huh", y)
+# findIt("mean", x)
+# findIt("huh", y)
+# findIt("mean", x)
+# #findIt("huh", y)
+# findIt("glm", current_env())
+# findIt <- function(name, env = current_env()){
+# if(identical(env, empty_env())){
+# stop("Can't find ", name)
+# } else if(env_has(env, name)){
+# return(env)
+# } else {
+# findIt(name, env_parent(env))
+# }
+# }
+# findIt("mean", x)
+# #findIt("huh", y)
+# findIt("glm")
+# search()
+# search_envs()
+# f <- function(){
+# a <- 1
+# print(a)
+# }
+# f()
+# f <- function(x){x <- 2; g(x)}
+# g <- function(x){x <- 3; h(x)}
+# h <- function(x) stop("!!!")
+# f(1)
+# f <- function(x){x <- 2; g(x)}
+# g <- function(x){x <- 3; h(x)}
+# h <- function(x) stop("!!!")
+# f(1)
+# traceback()
+
+```

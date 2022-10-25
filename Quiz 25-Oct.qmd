@@ -1,0 +1,16 @@
+---
+title: "Quiz 25-Oct"
+subtitle: "Stat 427: R Programming"
+format: revealjs
+editor: visual
+---
+
+## Quiz {.smaller}
+
+1. Create an environment `x`. Within `x` create a second environment `y`. In `y` bind a variable named `z` and give it a value of "hi". Create a function that exists in `y`. This function should do 2 things: 1) read the value of `z` in `y` and 2) uses super assignment to bind a variable named `w` in `x` that takes the current value of `z`.
+
+2. What is a recursive function? Write a short example of a recursive function. 
+
+3. What 2 commands did we discuss to show the "call stack"? Create a set of 3 nested functions, the last of which throws an error. Use one of the commands to show the call stack after the error is thrown.
+
+4. What is the "evaluation environment"?

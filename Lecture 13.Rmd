@@ -1,0 +1,302 @@
+---
+title: "Lecture 13"
+author: "Ben Ridenhour"
+date: "2022-10-18"
+output: 
+  pdf_document:
+    toc: true
+    toc_depth: 3
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(error = TRUE)
+```
+
+# Summary
+
+1. The quiz covered writing and using replacement and infix functions, testing for the existence of list elements, and high vs. low-level plotting commands.
+2. We began Ch 7 on environments and discussed a number of functions (in `base` and `rlang`) for working with environments. We also discussed similarities and dissimilarities of lists and environments, which seem very similar on the surface.
+3. We discussed super assignment (`<<-`) as well.
+
+-----------------------------
+
+# Quiz
+
+1.  Write a replacement function that takes a vector and repeats it some number of times. Execute the function on the vector `1:5` and repeat it 3 times.
+
+```{r}
+`repMe<-` <- function(x, value) {x <-rep(x,value); x}
+myVec <- 1:5
+repMe(myVec) <- 3
+myVec
+
+```
+
+2.  Write an infix function that does the same thing as (1). Execute the function.
+
+```{r}
+`%repMe%` <- function(LHS, RHS) rep(LHS, RHS)
+
+1:5 %repMe% 3
+
+```
+
+3.  Adjust (1) so that it takes an optional argument and appends it to the vector prior to doing the repetition. Execute the command with arguments specifying the vector `1:5` repeated 3 times with an appended vector `6:10`.
+
+```{r}
+`repMe<-` <- function(x, append = NULL, value) {x <-rep(c(x,append),value); x}
+myVec <- 1:5
+repMe(myVec,6:10) <- 3
+myVec
+```
+
+4.  Suppose you've been given a list and you don't know what items (elements) are in the list. What command can you use to return a logical value that tells you if the element `res` is in the list?
+
+```{r}
+
+someList <- list(a = 1:5, b = letters[1:3])
+
+is.null(someList[["res"]])
+
+```
+
+5.  During our exercise last Thursday the involved plotting points and lines, several plotting commands were used/discussed. Which plotting command was a "high level" command? Name 2 commands that we used that are "primitive/low level" commands. Why is it important to know the difference? (How do high level and low level commands interact?)
+
+`plot()` is high level. Primitive commands were `abline()` and `points()`. High level commands create new plots and low level plots add layers to high level commands.
+
+
+-----------------------------
+
+# Lecture Ch 7 Environments
+
+Environments are similar (but different) to lists...
+
+```{r}
+x <- new.env() #create a new environment
+x$a <- 3
+x[["bob"]] <- "hi"
+names(x)
+```
+We can also use the `env()` command in the `rlang` package.
+
+```{r}
+library(rlang)
+y <- env(a = 2, b = "apple", c = 1:5)
+names(y)
+y$b
+```
+We can nest environments within environments:
+
+```{r}
+x$y <- y
+
+#self referential
+x$x <- x
+
+parent.env(y) <- x
+parent.env(y)
+
+#rlang version
+env_parent(y)
+env_parents(y)
+```
+If we want the full list of parents:
+
+```{r}
+env_parents(y, last = empty_env())
+```
+
+Why does this fail?
+
+```{r}
+y$f <- function() a
+y$f()
+environment(y$f)
+```
+How do we fix it?
+
+```{r}
+environment(y$f) <- y
+y$f()
+```
+```{r}
+y[["a"]] <- NULL
+y$f()
+```
+However:
+
+```{r}
+z <- x
+z$a <- 4
+x$a
+```
+
+Another way to see the contents of an environment is given by `rlang`:
+
+```{r}
+print(x)
+env_print(x)
+```
+## Super assignment
+
+"Super" assignment (`<<-`) assigns a value in the *parent* environment of a function **if it exists**, otherwise it creates/sets the variable in the *global* environment.
+
+```{r}
+y[["setA"]] <- function(val) A <<- val
+environment(y[["setA"]]) <- y
+
+y$setA("ack")
+
+x$A <- "here"
+
+y[["setA"]]("cool")
+```
+
+Another difference from lists is that we cannot use numeric indexing:
+
+```{r}
+y[[1]]
+```
+But we can check for existence like a list:
+
+```{r}
+y[["xyz"]]
+```
+
+Checking for equivalence:
+
+```{r}
+z <- x
+#z == x
+identical(z, x)
+```
+
+## Various rlang commands
+
+```{r}
+env_has(y, "a") #does a exist in y?
+env_get(y, "a") #return a from y
+#env_get(y, "xyz") #return an error because xyz doesn't exist
+env_get(y, "xyz", default = "NotHere") #returns default if xyz is missing
+env_poke(y, "f2", function(x) x^2) #set a value for f2 in y
+env_bind(y, d=12, e="list") #this allows you to bind in multiple elements
+env_unbind(y, "a")
+```
+
+-----------------------------
+
+# History
+
+```{r}
+# 
+# `repMe<-` <- function(x, value) {x <-rep(x,value); x}
+# myVec <- 1:5
+# repMe(myVec) <- 3
+# myVec
+# `%repMe%` <- function(LHS, RHS) rep(LHS, RHS)
+# 1:5 %repMe% 3
+# `repMe<-` <- function(x, append, value) {x <-rep(c(x,append),value); x}
+# myVec <- 1:5
+# repMe(myVec,6:10) <- 3
+# myVec
+# someList <- list(a = 1:5, b = letters[1:3])
+# is.null(someList[["res"]])
+# library(rlang)
+# ?? rlang::.
+# x <- new.env() #create a new environment
+# x$a <- 3
+# names(x)
+# x <- new.env() #create a new environment
+# x$a <- 3
+# x[["bob"]] <- "hi"
+# names(x)
+# y <- env(a = 2, b = "apple", c = 1:5)
+# names(y)
+# y <- env(a = 2, b = "apple", c = 1:5)
+# names(y)
+# y$b
+# z <- x
+# z$a <- 4
+# x$a
+# print(x)
+# env_print(x)
+# View(y)
+# x$y <- y
+# #self referential
+# x$x <- x
+# View(x)
+# x$y <- y
+# #self referential
+# x$x <- x
+# parent.env(y) <- x
+# parent.env(y)
+# print(x)
+# x$y <- y
+# #self referential
+# x$x <- x
+# parent.env(y) <- x
+# parent.env(y)
+# #rlang version
+# env_parent(y)
+# env_parents(y)
+# env_parents(y, last = empty_env())
+# y$f <- function() a
+# y$f()
+# View(y)
+# View(x)
+# y$f <- function() a
+# y$f()
+# environment(y$f)
+# environment(y$f) <- y
+# y$f()
+# View(y)
+# View(x)
+# y$a <- NULL
+# y$f()
+# y$f()
+# View(y)
+# View(y)
+# y[["a"]] <- NULL
+# y$f()
+# y[["setA"]] <- function(val) A <<- val
+# environment(y[["setA"]]) <- y
+# y$setA("ack")
+# y[["setA"]] <- function(val) A <<- val
+# environment(y[["setA"]]) <- y
+# y$setA("ack")
+# x$A <- "here"
+# y[["setA"]]("cool")
+# View(x)
+# y[[1]]
+# y[["xyz"]]
+# z <- x
+# z <- x
+# z <- x
+# z == x
+# z <- x
+# #z == x
+# identity(z, x)
+# z <- x
+# #z == x
+# identical(z, x)
+# env_has(y, "a") #does a exist in y?
+# env_get(y, "a") #return a from y
+# #env_get(y, "xyz") #return an error because xyz doesn't exist
+# env_get(y, "xyz", default = "NotHere") #returns default if xyz is missing
+# env_poke(y, "f2", function(x) x^2) #set a value for f2 in y
+# env_bind(y, d=12, e="list") #this allows you to bind in multiple elements
+# env_print(y)
+# env_has(y, "a") #does a exist in y?
+# env_get(y, "a") #return a from y
+# #env_get(y, "xyz") #return an error because xyz doesn't exist
+# env_get(y, "xyz", default = "NotHere") #returns default if xyz is missing
+# env_poke(y, "f2", function(x) x^2) #set a value for f2 in y
+# env_bind(y, d=12, e="list") #this allows you to bind in multiple elements
+# env_unbind(y, "a")
+# env_print(y)
+# y$c <- NULL
+# env_print(y)
+
+
+```
