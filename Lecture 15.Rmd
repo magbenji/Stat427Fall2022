@@ -1,0 +1,333 @@
+---
+title: "Lecture 15"
+author: "Ben Ridenhour"
+date: "2022-10-25"
+output: 
+  pdf_document:
+    toc: true
+    toc_depth: 3
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(error = TRUE)
+```
+
+# Summary
+
+1. The quiz covered using super assignment within nested environments, recursive functions, examining the call stack, and the concept of the evaluation environment.
+
+2. The first part of lecture covered some topics from Ch 7 that we hadn't yet discussed: lazy bindings, active bindings, and namespaces. These were more FYI topics than ones I expect you to be able to use.
+
+3. We began our discussion of Ch 8 on "conditions." We covered the basic idea of the condition system and the "signalling" side of the system. In particular, we focused on the the functions in `base` and `rlang` packages: `stop()`, `abort()`, `warning()`, `warn()`, and `message()`.
+
+4. We also went over the exam preview (now available on Canvas).
+
+
+--------------------------------
+
+# Quiz
+
+1. Create an environment `x`. Within `x` create a second environment `y`. In `y` bind a variable named `z` and give it a value of "hi". Create a function that exists in `y`. This function should do 2 things: 1) read the value of `z` in `y` and 2) uses super assignment to bind a variable named `w` in `x` that takes the current value of `z`.
+
+```{r}
+library(rlang)
+x <- env(y = env(z = "hi", f = function() w <<- z))
+parent.env(x$y) <- x
+environment(x$y$f) <- x$y
+#we need to have w in x for super assignment to write w in x (otherwise it
+#it will be in the global environment)
+env_bind(x, w = NULL)
+x$y$f()
+```
+
+2. What is a recursive function? Write a short example of a recursive function. 
+
+A recursive function is one that calls itself (repeatedly).
+```{r}
+#f <- function() f()
+```
+
+3. What 2 commands did we discuss to show the "call stack"? Create a set of 3 nested functions, the last of which throws an error. Use one of the commands to show the call stack after the error is thrown.
+
+`traceback()` and `lobstr::cst()` can be used to see the call stack.
+
+```{r}
+f <- function(x) g(x)
+g <- function(y) h(y)
+h <- function(z) log(z)
+
+f("a")
+
+traceback()
+
+f <- function(x) g(x)
+g <- function(y) h(y)
+h <- function(z) {lobstr::cst();log(z)}
+
+f("a")
+```
+
+4. What is the "evaluation environment"?
+
+The evaluation environment is the temporary environment created when we call a function.
+
+----------------------------------
+
+
+# Lecture Ch 8 Conditions (some last bits of chapter 7)
+
+## Ch 7 oddities
+
+In environments, you have "lazy" or "active" bindings. Lazy bindings in environments do not get evaluated until accessed:
+
+```{r}
+env_bind_lazy(x, wait = {Sys.sleep(1); 1})
+
+system.time(print(x$wait))
+
+system.time(print(x$wait))
+```
+Active bindings get evaluated every time they are accessed:
+
+```{r}
+env_bind_active(x, now = function() runif(1))
+x$now
+x$now
+```
+Namespaces are important environments that have some special features. The most notable is that they have a specified search path for bindings.
+
+## Ch 8 Condtions
+
+The "condition" system provides ways to signal something unusual or problematic might be happening and a way to deal with these issues. We can broadly divide the condition system into two parts: signalling and handling.
+
+Signalling functions:
+1. `stop()`
+2. `warning()`
+3. `message()`
+
+Handling functions:
+1. `try()`
+2. `tryCatch()`
+3. `withCallingHandlers()`
+
+Again, `rlang` will provide some convenience functions for working with the condition system.
+
+### Errors
+
+We've seen errors before:
+
+```{r}
+f <- function() stop("This an error!")
+f()
+```
+ If we don't want the call to be displayed:
+ 
+```{r}
+f <- function() stop("This an error!", call. = F)
+f()
+
+#in rlang we have the equivalent
+f <- function() abort("Rlang error!")
+f()
+```
+
+### Warnings
+
+Warnings do not stop function evaluation like errors.
+
+```{r}
+options(warn = 0)
+f <- function(){
+  print("hi")
+  warning("W1!")
+  print("there")
+  warning("W2!")
+}
+
+f()
+```
+```{r}
+options(warn = 1) #print in place
+f()
+```
+```{r}
+options(warn = 2) #convert warnings to errors
+f()
+```
+
+We have an `rlang` version of warnings:
+
+```{r}
+warn("uh oh") #same was warning with call. = F option
+```
+
+
+The `warnings()` command prints out the last set of warnings. If the are many warnings you can do `summary(warnings())`.
+
+### Messages
+
+Messages are strictly informational. 
+
+```{r}
+message("Awesome")
+```
+
+----------------------------------
+
+# History
+
+```{r}
+# knitr::opts_chunk$set(echo = TRUE)
+# knitr::opts_chunk$set(error = TRUE)
+# library(rlang)
+# x <- env(y = env(z = "hi", f = function() w <<- z))
+# env_print(x)
+# env_print(x$y)
+# environment(x$y$f)
+# environment(x$y$f) <- x$y
+# environment(x$y$f)
+# x$y
+# env_bind(x, w = NULL)
+# env_print(x)
+# x$y$f()
+# env_print(x)
+# env_bind(x, w = "a")
+# x$y$f()
+# x$w
+# parent.env(x$y)
+# rm(w)
+# library(rlang)
+# x <- env(y = env(z = "hi", f = function() w <<- z))
+# environment(x$y) <- x
+# environment(x$y$f) <- x$y
+# #we need to have w in x for super assignment to write w in x (otherwise it
+# #it will be in the global environment)
+# env_bind(x, w = NULL)
+# x$y$f()
+# env_parent(x$y)
+# env_parent(x$y)
+# parent.env(x$y) <- x
+# env_parent(x$y)
+# x
+# library(rlang)
+# x <- env(y = env(z = "hi", f = function() w <<- z))
+# parent.env(x$y) <- x
+# environment(x$y$f) <- x$y
+# #we need to have w in x for super assignment to write w in x (otherwise it
+# #it will be in the global environment)
+# env_bind(x, w = NULL)
+# x$y$f()
+# rm(w)
+# library(rlang)
+# x <- env(y = env(z = "hi", f = function() w <<- z))
+# parent.env(x$y) <- x
+# environment(x$y$f) <- x$y
+# #we need to have w in x for super assignment to write w in x (otherwise it
+# #it will be in the global environment)
+# env_bind(x, w = NULL)
+# x$y$f()
+# x$y$z
+# x$w
+# f <- function(x) g(x)
+# g <- function(y) h(y)
+# h <- function(z) log(z)
+# f("a")
+# f <- function(x) g(x)
+# g <- function(y) h(y)
+# h <- function(z) log(z)
+# f("a")
+# traceback()
+# f <- function(x) g(x)
+# g <- function(y) h(y)
+# h <- function(z) log(z)
+# f("a")
+# traceback()
+# f <- function(x) g(x)
+# g <- function(y) h(y)
+# h <- function(z) {lobstr::cst();log(z)}
+# f <- function(x) g(x)
+# g <- function(y) h(y)
+# h <- function(z) log(z)
+# f("a")
+# traceback()
+# f <- function(x) g(x)
+# g <- function(y) h(y)
+# h <- function(z) {lobstr::cst();log(z)}
+# f("a")
+# env_bind_lazy(y, wait = {Sys.sleep(1); 1})
+# system.time(print(y$wait))
+# system.time(print(y$wait))
+# env_bind_lazy(x, wait = {Sys.sleep(1); 1})
+# system.time(print(x$wait))
+# system.time(print(x$wait))
+# env_bind_active(x, now = function() runif(1))
+# y$now
+# env_bind_active(x, now = function() runif(1))
+# x$now
+# env_bind_active(x, now = function() runif(1))
+# x$now
+# x$now
+# env_parents(last = empty_env())
+# f <- function() stop("This an error!")
+# f()
+# f <- function() stop("This an error!", call. = F)
+# f()
+# f <- function() stop("This an error!", call. = F)
+# f()
+# #in rlang we have the equivalent
+# f <- function() abort("Rlang error!")
+# f()
+# f <- function(){
+# print("hi")
+# warning("W1!")
+# print("there")
+# warning("W2!")
+# }
+# f()
+# options(warn=0)
+# f <- function(){
+# print("hi")
+# warning("W1!")
+# print("there")
+# warning("W2!")
+# }
+# f()
+# options(warn = 1)
+# f()
+# options(warn = 0)
+# f()
+# option(warn = 0)
+# f <- function(){
+# print("hi")
+# warning("W1!")
+# print("there")
+# warning("W2!")
+# }
+# f()
+# options(warn = 0)
+# f <- function(){
+# print("hi")
+# warning("W1!")
+# print("there")
+# warning("W2!")
+# }
+# f()
+# f()
+# options(warn = 1)
+# f()
+# f()
+# options(warn = 1)
+# f()
+# options(warn = 2)
+# f()
+# warn("uh oh")
+# options(warn=0)
+# warn("uh oh")
+# warning("uh oh", call. = F)
+# warning("uh oh")
+# f <- function() warning("uh oh")
+# f()
+# message("Awesome")
+```
+
