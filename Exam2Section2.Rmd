@@ -1,0 +1,60 @@
+---
+title: "Exam 2, Section 2"
+author: "YOUR NAME"
+date: "`r Sys.Date()`"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Coding Challenge 1
+
+Wordle is an extremely popular word game where users try to guess a 5-letter word. If you are unfamiliar with it you can check it out [here](https://www.nytimes.com/games/wordle/index.html). The game has several features:
+
+1. The user must guess a valid 5-letter English word.
+
+2. The user gets 6 guesses to find the correct word.
+
+3. When you make a guess, it lets you know a) if the letter is in the word but in the wrong position, b) if the letter is in the word and in the correct position, and c) in the case of a multiple letter (e.g. there are two "o"s in goose and three "m"s in mummy) it will let you know if you have gotten the position correct for both. As an example of the last case, if the word was "minim" and you guessed "mummy", the game would indicate that the first m (in "mummy") is in the correct position, the second m is in the incorrect position, and that the third m does not exist in the word.
+
+Write a function called `wordle()` that allows a user to play Wordle in R. Aside from mimicking the behaviors listed above, here are some specific behaviors I want your function to perform:
+
+1. When a user makes a valid guess, return correctly positioned letters as an upper case letter, return incorrectly positioned letters as a lower case letter, and incorrect letters as *.
+
+2. Return a warning after each guess telling the user how many guesses they have left.
+
+3. If the user guesses correctly, give them a congratulatory message!
+
+4. Give the user an option to quit the game at any time with an exit message.
+
+In order to get input from the user, use the `readline()` command with the prompt "Guess? ". Use the `words` package to get a listing of all possible 5-letter words. Pick a random word from list, but, before doing so, set the random number generation seed using the current date (i.e. every day the randomly chosen word changes). 
+
+# Coding Challenge 2
+
+Create a function that subsamples a data set and plots the resulting linear model versus the same model for the full data set. The points used in the subsampled model should have a different color by default. The lines should have different styles (color, line type) by default.
+
+Here are some specific details of the function:
+
+1. The user will specify a set of xy-data as a data frame/tibble.
+
+2. The user must specify the **fraction** of the data they want in the subsample and have the option to specify whether they are okay with sampling with replacement (default to be sampling without replacement). 
+
+3. The user can also specify a column **in the data set** named "pch" (i.e. that MUST be the name of the column in the data) that can be used in the plotting the data points. 
+
+4. The user should have full access to the optional flags of the plotting functions, and the ability to change the color of the lines and data points and the style of the lines (`lty` and `lwd` options).
+
+5. The user can choose between running either `lm` or `glm` and specifying the "family" option for a glm (the default should be gaussian).
+
+6. The function should, by default, run the model `y ~ x`, however, the user should be able to specify a different linear model.
+
+
+
+
+
+
+
+
+
+
