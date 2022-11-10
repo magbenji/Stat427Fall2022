@@ -1,0 +1,24 @@
+---
+title: "Homework Problem 10-Nov"
+subtitle: "Stat 427: R Programming"
+format: revealjs
+editor: visual
+---
+
+## Problem {.smaller}
+
+You are to create a Markov Chain-Monte Carlo sampler (a single function) that can flexibly switch between Poisson, binomial (Bernoulli), and Gaussian distributed data. We will use the Metropolis-Hastings algorithm for accepting new parameter proposals. See [https://en.wikipedia.org/wiki/Metropolis--Hastings_algorithm](https://en.wikipedia.org/wiki/Metropolis--Hastings_algorithm). Tasks:
+
+1.  The function should take arguments: data (input data frame), parameter list, distribution type, and number of iterations.
+
+2.  The function should invisibly return the results of the MCMC chain.
+
+3.  The function should estimate the distribution parameters for the distribution type. For the normal distribution, if the user specifies the initial standard deviation, then the sampler should estimate the standard deviation. If the deviation *is not* specified, then the sample *should not* estimate the standard deviation and instead use the default of 1.
+
+4.  The results should have estimates for each variable in the data frame. In other words, if the data frame has variables x, y, and z, then parameters should be estimated for those 3 variables.
+
+5.  Create data sets (of at least 2 variables) for each type of distribution and test your function. 
+
+6.  Actually estimate parameters for each data . To do this, run your sample to *stationarity*. Then, taking the stationary sample, *thin* the data using an appropriate step size. Finally, calculate the mean and standard error of the parameter using the thinned posterior sample.
+
+7.  Plot a histogram of the posterior samples as well as plotting the chains with a loess of each chain. Try using `ggplot()` to do the plotting. 
