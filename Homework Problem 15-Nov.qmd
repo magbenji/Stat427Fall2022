@@ -1,0 +1,20 @@
+---
+title: "Homework Problem 15-Nov"
+subtitle: "Stat 427: R Programming"
+format: revealjs
+editor: visual
+---
+
+## Problem {.smaller}
+
+The "100 prisoners problem" (of which a description can be found [here](https://en.wikipedia.org/wiki/100_prisoners_problem)) can be tested using simulation techniques. A video of the problem with a description can also be found [here](https://www.youtube.com/watch?v=iSNsgj1OCLA&t=867s). The basic premise is that 100 prisoners must find their prisoner number in 100 boxes to be released; they each only get to open 50 boxes (i.e., the odds of any prisoner finding their number is, on the surface, 50/50). If any of the prisoners fail, they all fail and are kept in jail. Your tasks are as follows:
+
+1.  Create a function that can run many instances of the prisoners problem. You should be able to specify: how many instances are to be run, how many prisoners (default 100), how many boxes (default 100), and the number of attempts each prison gets (default 50). The function should *invisibly* return the number of times the the prisoners escape and how many instances were run; when the function exits, it should print a message saying what percentage of the time the prisoners escaped.
+
+2.  Run the function with increasing number of instances and plot the results (number of releases vs. instances) . Use 10, 20, 50, 100, 500, 1000, 5000, and 10000 as the number of instances to be tested.
+
+3.  Using the binomial Metropolis Hastings MCMC sampler you programmed in the last homework, adapt the sampler such that you can pass it the number of escapes and the number of instances. Run 500 different iterations where you allow the number of instances to vary from 10 to 1000 (sampled randomly) to create the data set to be given to the sampler. Estimate the proportion of the time the prisoners are released and its standard error using the posterior distribution.
+
+4.  Create a plot that show the effects of varying the proportion of boxes each prisoner gets to open.
+
+5.  Create a plot that shows the effect of changing the number of boxes per prisoner (in the default there are 100 boxes for 100 prisoners; try changing the number of boxes and slips with numbers on them to, e.g., 150, 175, 200, ... while leaving the number of prisoners at 100).
