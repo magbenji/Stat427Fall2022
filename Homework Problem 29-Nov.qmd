@@ -1,0 +1,28 @@
+---
+title: "Homework Problem 29-Nov"
+subtitle: "Stat 427: R Programming"
+format: revealjs
+editor: visual
+---
+
+## Problem {.smaller .scrollable}
+
+Performing least-squares regression is very straight-forward. The vector of coefficients can be solved using the equation:
+
+$$\vec{\beta} =(\mathbb{X}^T\mathbb{X})^{-1}\mathbb{X}\vec{y} $$
+
+where $\vec{y}$ is the vector of $n$ dependent observations and $\mathbb{X}$ is the $n \times m$ "model matrix" of $m$ predictor variables. You will write your own version of least-squares regression, that does the following:
+
+1.  Requires a formula for the regression, the y-data, and the X data matrix (separately). For example, the most basic call to the function could be something like `myLSQReg(y ~ x1 + x2, y_obs, x_data)`.
+
+2.  Can take an optional flag `intercept` with a default of `FALSE`. If the user switches the value to `TRUE`, your function will include an intercept in the model.
+
+3.  Has an optional flag `nIterations` with default 100. The `nIterations` flag will specify the number of bootstrap estimates to be performed.
+
+4.  Invisibly returns a list that has: a matrix of all coefficients calculated from each bootstrap iteration, a vector of the mean coefficient estimates, a vector of the standard errors of the coefficient estimates, a vector of predictions, the number of iterations, and the $R^2$ value for the mean model. On exit, the function should print out the mean coefficient values.
+
+5.  The return object should have a class of "lsqReg".
+
+6.  Create a `summary()` function for the lsqReg class that prints out the formula of the regression, a table of the estimates (with their standard errors), the number of iterations performed, and the $R^2$ of the mean model. (In other words, something akin to what you would get from running `summary()` on a standard `lm` model.)
+
+7.  Create a `plot()` function for lsqReg class that, by default, plots the observed y-values versus the predicted y-values ($\hat{y}$) using the mean model along with a red 1-to-1 line. Note that the user should have the ability to specify plotting parameters (such as `xlim`) to plot using `...`, the ability to specify the point color with an optional flag `pointColor`, and the ability to set the line color with an optional flag `lineColor`. Finally, give the user the optional flag `iteration` that chooses coefficients from a specific iteration, and plot the predictions of that model rather than the mean model. In the title of the *all* plots, give the equation for the predictions (i.e., it should display the correct parameter values).
